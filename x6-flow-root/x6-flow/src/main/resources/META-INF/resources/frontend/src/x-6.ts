@@ -1452,6 +1452,7 @@ export class X6 extends LitElement {
 
   protected render(): unknown {
     return html`
+      <h2>Kuwaiba Open Source Network Inventory</h2>
       <div id="container"></div>
       `;
   }
