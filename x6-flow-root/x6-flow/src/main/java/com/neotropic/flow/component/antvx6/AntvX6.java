@@ -72,11 +72,17 @@ public class AntvX6 extends Div {
     * List of edges present in the graph.
     */
     private List<X6Edge> edges;
+    
+    /*
+    * List of listeners.
+    */
+    public List<Registration> lstListeners;
    
     public AntvX6() {
         this.nodeBackground = new X6NodeBackground();
         this.nodes = new ArrayList();
         this.edges = new ArrayList();
+        this.lstListeners = new ArrayList();
     }    
     
     /**
@@ -85,6 +91,13 @@ public class AntvX6 extends Div {
     */
     public String getNodeBackgroundId(){
         return this.getElement().getAttribute(PROPERTY_GRAPH_NODE_BACKGROUND_ID);
+    }
+    
+    /**
+    * Set the ID of the node background.
+    */
+    public void setNodeBackgroundId(String idBackground){
+        this.getElement().setProperty(PROPERTY_GRAPH_NODE_BACKGROUND_ID, idBackground);
     }
     
     /**
@@ -402,57 +415,71 @@ public class AntvX6 extends Div {
     * @return a Registration object that can be used to unregister the listener
     */
     public Registration addGraphCreatedListener(ComponentEventListener<GraphCreatedEvent> listener) {
-        return addListener(GraphCreatedEvent.class, listener);
+        Registration registration = addListener(GraphCreatedEvent.class, listener);
+        this.lstListeners.add(registration);
+        return registration;
     }
     
     /**
-    * Registers a listener for the GraphCleanedEvent.
-    *
-    * @param listener the listener to be notified when a graph is cleaned
-    * @return a Registration object that can be used to unregister the listener
-    */
+     * Registers a listener for the GraphCleanedEvent.
+     *
+     * @param listener the listener to be notified when a graph is cleaned
+     * @return a Registration object that can be used to unregister the listener
+     */
     public Registration addGraphCleanedListener(ComponentEventListener<GraphCleanedEvent> listener) {
-        return addListener(GraphCleanedEvent.class, listener);
+        Registration registration = addListener(GraphCleanedEvent.class, listener);
+        lstListeners.add(registration);
+        return registration;
     }
     
     /**
-    * Registers a listener for the GraphRefresheddEvent.
-    *
-    * @param listener the listener to be notified when a graph is refreshed
-    * @return a Registration object that can be used to unregister the listener
-    */
+     * Registers a listener for the GraphRefresheddEvent.
+     *
+     * @param listener the listener to be notified when a graph is refreshed
+     * @return a Registration object that can be used to unregister the listener
+     */
     public Registration addGraphRefreshedListener(ComponentEventListener<GraphRefresheddEvent> listener) {
-        return addListener(GraphRefresheddEvent.class, listener);
+        Registration registration = addListener(GraphRefresheddEvent.class, listener);
+        lstListeners.add(registration);
+        return registration;
     }
     
     /**
-    * Registers a listener for the NodeMovedEvent.
-    *
-    * @param listener the listener to be notified when a node is moved
-    * @return a Registration object that can be used to unregister the listener
-    */
+     * Registers a listener for the NodeMovedEvent.
+     *
+     * @param listener the listener to be notified when a node is moved
+     * @return a Registration object that can be used to unregister the listener
+     */
     public Registration addNodeMovedListener(ComponentEventListener<NodeMovedEvent> listener) {
         return addListener(NodeMovedEvent.class, listener);
     }
     
     /**
-    * Registers a listener for the NodeBackgroundResizedEvent.
-    *
-    * @param listener the listener to be notified when a node's background is resized
-    * @return a Registration object that can be used to unregister the listener
-    */
+     * Registers a listener for the NodeBackgroundResizedEvent.
+     *
+     * @param listener the listener to be notified when a node's background is resized
+     * @return a Registration object that can be used to unregister the listener
+     */
     public Registration addNodeBackgroundResizedListener(ComponentEventListener<NodeBackgroundResizedEvent> listener) {
         return addListener(NodeBackgroundResizedEvent.class, listener);
     }
 
     /**
-    * Registers a listener for the CellSelectedEvent.
-    *
-    * @param listener the listener to be notified when a cell (node or edge) is selected
-    * @return a Registration object that can be used to unregister the listener
-    */
+     * Registers a listener for the CellSelectedEvent.
+     *
+     * @param listener the listener to be notified when a cell (node or edge) is selected
+     * @return a Registration object that can be used to unregister the listener
+     */
     public Registration addCellSelectedListener(ComponentEventListener<CellSelectedEvent> listener) {
         return addListener(CellSelectedEvent.class, listener);
+    }
+    
+    /**
+     * Removes listeners.
+     */
+    public void removeListeners() {
+        lstListeners.forEach(item -> item.remove());
+        lstListeners = new ArrayList();
     }
 
     public X6NodeBackground getNodeBackground() {

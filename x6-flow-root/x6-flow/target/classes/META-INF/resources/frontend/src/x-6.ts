@@ -764,9 +764,8 @@ export class X6 extends LitElement {
   public centerGraph(idNode: string){
     if(this.graph){
       const nodeCell = this.graph.getCellById(idNode);
-      if(nodeCell){
+      if(nodeCell)
         this.graph.centerCell(nodeCell);
-      }
     }
   }
 
@@ -784,7 +783,8 @@ export class X6 extends LitElement {
   public refreshGraph(){
     if(this.graph){
       const backup = this.graph.toJSON();
-      this.cleanGraph();
+      this.graph.clearCells();
+      this.createGhost();
       this.graph.fromJSON(backup);
       this.dispatchEvent(new CustomEvent('graph-refreshed', {
         detail: {
@@ -839,8 +839,7 @@ export class X6 extends LitElement {
             }
           }));
         }else
-          // If the background node is selected, it unselects it.
-          this.graph?.unselect(cell);
+          this.graph?.unselect(cell); // If the background node is selected, it unselects it.
       })
     }
   }
@@ -915,13 +914,12 @@ export class X6 extends LitElement {
   public createBackground(x6NodeBackground : X6NodeBackground){
     if(this.graph){
       // If another background existed, remove it.
-      if(this.graph_node_background_id  !== ''){
+      if(this.graph_node_background_id){
           const oldBackground = this.graph.getCellById(this.graph_node_background_id);
-          this.graph_node_background_id  = '';
           if(oldBackground)
             this.graph.removeCell(oldBackground);
       }
-
+      
       this.graph_node_background_id = x6NodeBackground.id;
       this.graph.addNode({
         id:  x6NodeBackground.id,
@@ -950,8 +948,6 @@ export class X6 extends LitElement {
         this.graph_node_background_id = '';
         if (node)
           this.graph.removeCell(node);
-        
-          
       }
     }
   }
