@@ -10,7 +10,7 @@ In the web component project, you can perform tests or add functionalities.
 > If you make modifications to the TypeScript file (x-6.ts) of the web component, please remember to replace it in the location where this file is found in the x6 add-on.
 >
 
-The TypeScript file (`x-6.ts`) for the web component can be found at the following location in the X6 add-on:
+The TypeScript file (`x-6.ts`) of the web component can be found at the following location in the X6 add-on:
 
 - x6-flow-root/x6-flow/src/main/resources/META-INF/resources/frontend/src/`x-6.ts`
 
