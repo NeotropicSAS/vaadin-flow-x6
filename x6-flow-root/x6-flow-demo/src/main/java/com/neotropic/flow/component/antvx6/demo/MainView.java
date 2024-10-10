@@ -16,9 +16,6 @@
 
 package com.neotropic.flow.component.antvx6.demo;
 
-import com.neotropic.flow.component.antvx6.AntvX6;
-import com.neotropic.flow.component.antvx6.constants.X6Constants;
-import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
@@ -34,15 +31,7 @@ import com.vaadin.flow.server.PWA;
 public class MainView extends VerticalLayout {
    
     public MainView() {
-        AntvX6 x6 = new AntvX6();
-        add(x6);
         
-        String url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZj-3Gf3IOMX44LXAIpUVhghfvXsCEId-EYmMtnvoKLnsMLUQxmuj4EH8aUfYiJoMn9o&usqp=CAU";
-        X6Node node = new X6Node("1", X6Constants.SHAPE_IMAGE,0, 0, 32 , 32 ,url,"router","white");
-        
-        x6.addGraphCreatedListener(event -> {
-            x6.drawNodeObjectView(node);
-        });
     }        
 
 }
