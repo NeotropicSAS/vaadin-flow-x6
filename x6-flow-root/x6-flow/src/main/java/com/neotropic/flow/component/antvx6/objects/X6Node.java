@@ -21,15 +21,24 @@ package com.neotropic.flow.component.antvx6.objects;
  */
 public class X6Node extends X6Cell{
     private String labelText;
+    public String labelPosition;
     private String labelColor;
     
     public X6Node(){
         super();
     }
-
-    public X6Node(String id, String shape, double x, double y,double width, double height, String imgUrl, String labelText, String labelColor) {
-        super(id, shape, x, y ,width, height, imgUrl);
+    
+    public X6Node(String id, String shape, double x, double y,double width, double height, String labelText, String labelPosition, boolean movable) {
+        super(id, shape, x, y ,width, height, movable);
         this.labelText = labelText;
+        this.labelPosition = labelPosition;
+        this.labelColor = "";
+    }
+    
+    public X6Node(String id, String shape, double x, double y,double width, double height, String imgUrl, String labelText, String labelColor) {
+        super(id, shape, x, y ,width, height, imgUrl, true, 2);
+        this.labelText = labelText;
+        this.labelPosition = "bottom";
         this.labelColor = labelColor;
     }
 
@@ -71,6 +80,26 @@ public class X6Node extends X6Cell{
     public void setImgUrl(String imgUrl) {
         super.setImgUrl(imgUrl);
     }
+    
+    @Override
+    public String getColorFill(){
+        return super.getColorFill();
+    }
+    
+    @Override
+    public void setColorFill(String colorFill){
+        super.setColorFill(colorFill);
+    }
+    
+    @Override
+    public boolean isMovable(){
+        return super.isMovable();
+    }
+    
+    @Override
+    public void setMovable(boolean movable){
+        super.setMovable(movable);
+    }
 
     public String getLabelText() {
         return labelText;
@@ -80,6 +109,14 @@ public class X6Node extends X6Cell{
         this.labelText = labelText;
     }
 
+    public String getLabelPosition() {
+        return labelPosition;
+    }
+
+    public void setLabelPosition(String labelPosition) {
+        this.labelPosition = labelPosition;
+    }
+
     public String getLabelColor() {
         return labelColor;
     }
@@ -87,4 +124,10 @@ public class X6Node extends X6Cell{
     public void setLabelColor(String labelColor) {
         this.labelColor = labelColor;
     }
+  
+    @Override
+    public String toString() {
+        return  super.toString() + " " + "X6Node{" + "labelText=" + labelText + ", labelColor=" + labelColor + '}';
+    }
+    
 }

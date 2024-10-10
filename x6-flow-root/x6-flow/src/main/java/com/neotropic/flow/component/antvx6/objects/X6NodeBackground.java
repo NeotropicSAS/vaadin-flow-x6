@@ -26,7 +26,7 @@ public class X6NodeBackground extends X6Cell {
     }
 
     public X6NodeBackground(String id, String shape, double x, double y,double width, double height, String imgUrl) {
-        super(id, shape, x, y ,width, height, imgUrl);
+        super(id, shape, x, y ,width, height, imgUrl,false, 1);
     }
 
     @Override
@@ -68,4 +68,43 @@ public class X6NodeBackground extends X6Cell {
         super.setImgUrl(imgUrl);
     }
     
+    @Override
+    public String getColorFill(){
+        return super.getColorFill();
+    }
+    
+    @Override
+    public void setColorFill(String colorFill){
+        super.setColorFill(colorFill);
+    }
+    
+    @Override
+    public boolean isMovable(){
+        return super.isMovable();
+    }
+    
+    @Override
+    public void setMovable(boolean movable){
+        super.setMovable(true);
+    }
+    
+    @Override
+    public boolean isPort(){
+        return super.isPort();
+    }
+    
+    @Override
+    public void setPort(boolean port){
+        super.setPort(port);
+    }
+    
+    @Override
+    public int getzIndex(){
+        return super.getzIndex();
+    }
+    
+    @Override
+    public void setzIndex(int zIndex){
+        super.setzIndex(zIndex);
+    }
 }

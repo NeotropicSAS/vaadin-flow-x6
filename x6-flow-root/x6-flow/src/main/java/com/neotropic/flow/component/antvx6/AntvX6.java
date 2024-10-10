@@ -20,6 +20,7 @@ import com.neotropic.flow.component.antvx6.objects.X6Edge;
 import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.neotropic.flow.component.antvx6.objects.X6NodeBackground;
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
@@ -47,6 +48,7 @@ public class AntvX6 extends Div {
     /*
     * Basic graph configuration properties
     */
+    private static final String PROPERTY_KUWAIBA_GRAPH = "kuwaiba_graph";
     private static final String PROPERTY_GRAPH_WIDTH = "graph_width";
     private static final String PROPERTY_GRAPH_HEIGHT = "graph_height";
     private static final String PROPERTY_GRAPH_BACKGROUND_COLOR = "graph_background_color";
@@ -59,7 +61,7 @@ public class AntvX6 extends Div {
     private static final String PROPERTY_PADDING_EXPORT_GRAPH_JPEG = "padding_export_graph_JPEG";
     private static final String PROPERTY_GRAPH_ZOOM = "graph_zoom";
     private static final String PROPERTY_GRAPH_NODE_BACKGROUND_ID = "graph_node_background_id";
-    
+
     /*
     * Background of the x6 canvas.
     */  
@@ -91,6 +93,13 @@ public class AntvX6 extends Div {
     */
     public String getNodeBackgroundId(){
         return this.getElement().getAttribute(PROPERTY_GRAPH_NODE_BACKGROUND_ID);
+    }
+    
+     /**
+    * Set the Kuwaiba graph.
+    */
+    public void setKuwaibaGraph(int kuwaibaGraph){
+        this.getElement().setProperty(PROPERTY_KUWAIBA_GRAPH ,kuwaibaGraph);
     }
     
     /**
@@ -252,7 +261,7 @@ public class AntvX6 extends Div {
             "  coordinates: { x: $2, y: $3 }, " +
             "  dimensions: { width: $4, height: $5 } " +
             "}, " +
-            "imgUrl: $6 " +
+            "imgUrl: $6, colorFill: $7, movable: $8, port: $9, zIndex: $10,  " +
             "})",
             background.getId(),
             background.getShape(),
@@ -260,7 +269,11 @@ public class AntvX6 extends Div {
             background.getGeometry().getCoordinates().getY(),
             background.getGeometry().getDimensions().getWidth(),
             background.getGeometry().getDimensions().getHeight(),
-            background.getImgUrl()
+            background.getImgUrl(),
+            background.getColorFill(),
+            background.isMovable(),
+            background.isPort(),
+            background.getzIndex()
         );
         this.nodeBackground = background;
     }
@@ -279,25 +292,25 @@ public class AntvX6 extends Div {
         this.nodeBackground.setShape(X6Constants.SHAPE_IMAGE);
         this.nodeBackground.setId("");
     }
-
+    
     /**
     * Draws a visual representation of a node in the graph.
     *
     * This method constructs and sends the necessary data to the frontend
-    * to create a node for the object view. It calls the JavaScript function
-    * `drawNodeObjectView`.
+    * to create a node. It calls the JavaScript function `drawNode`.
     * 
     * @param node the X6Node object to be draw.
     */
-    public void drawNodeObjectView(X6Node node) {
+    public void drawNode(X6Node node) {
         getElement().executeJs(
-            "this.drawNodeObjectView({ " +
+            "this.drawNode({ " +
             "id: $0, shape: $1, " +
             "geometry: { " +
             "  coordinates: { x: $2, y: $3 }, " +
             "  dimensions: { width: $4, height: $5 } " +
             "}, " +
-            "imgUrl: $6, labelText: $7, labelColor: $8 " +
+            "imgUrl: $6, colorFill: $7, movable: $8, port: $9, zIndex: $10,  " +
+            "labelText: $11, labelColor: $12, labelPosition: $13 " +
             "})",
             node.getId(),
             node.getShape(),
@@ -306,10 +319,43 @@ public class AntvX6 extends Div {
             node.getGeometry().getDimensions().getWidth(),
             node.getGeometry().getDimensions().getHeight(),
             node.getImgUrl(),
+            node.getColorFill(),
+            node.isMovable(),
+            node.isPort(),
+            node.getzIndex(),
             node.getLabelText(),
-            node.getLabelColor()
+            node.getLabelColor(),
+            node.getLabelPosition()
         );
         this.nodes.add(node);
+    }
+    
+    /**
+    * Draws a visual representation of a text for a node in the graph.
+    *
+    * This method constructs and sends the necessary data to the frontend
+    * to create a text node. It calls the JavaScript function `drawText`.
+    * 
+     * @param id text id
+     * @param x text coordinate in x
+     * @param y text coordinate in y
+     * @param label label of the text
+    */
+    public void drawText(String id, double x , double y, String label){
+        this.getElement().callJsFunction("drawText",id, x, y, label,false);
+    }
+    
+    /**
+    * Establishes a parent-child relationship between two nodes in the graph.
+    *
+    * This method constructs and sends the necessary data to the frontend
+    * to link a child node to its parent node. It calls the JavaScript function `setFather`.
+    *
+    * @param idFather the id of the parent node
+    * @param idChild the id of the child node
+    */
+    public void setFather(String idFather, String idChild){
+        this.getElement().callJsFunction("setFather", idFather, idChild);
     }
     
     /**
@@ -317,13 +363,13 @@ public class AntvX6 extends Div {
     *
     * This method constructs and sends the necessary data to the frontend
     * to create an edge of the object view. It calls the JavaScript function
-    * `drawEdgeObjectView`.
+    * `drawEdge`.
     * 
     * @param edge the X6Edge object to be draw.
     */
-    public void drawEdgeObjectView(X6Edge edge) {
+    public void drawEdge(X6Edge edge) {
         getElement().executeJs(
-            "this.drawEdgeObjectView({ " +
+            "this.drawEdge({ " +
             "id: $0, idSource: $1, idTarget: $2, label: $3 " +
             "})",
             edge.getId(),

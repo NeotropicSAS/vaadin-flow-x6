@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import {LitElement, customElement, html, css, property } from 'lit-element';
+import {LitElement, customElement, query, html, css, property } from 'lit-element';
 import { Graph } from '@antv/x6';
 import{ Snapline }from'@antv/x6-plugin-snapline';
 import { Transform } from '@antv/x6-plugin-transform';
@@ -56,6 +56,10 @@ interface X6Cell{
   shape: string;
   geometry: Geometry;
   imgUrl: string;
+  colorFill: string;
+  movable: boolean;
+  port: boolean;
+  zIndex : number;
 }
 
 /**
@@ -70,6 +74,7 @@ interface X6NodeBackground extends X6Cell{
  */
 interface X6Node extends X6Cell{
   labelText: string;
+  labelPosition: string;
   labelColor: string;
 }
 
@@ -525,6 +530,17 @@ export class X6 extends LitElement {
 
   `;
 
+
+  /**
+  * the view for which x6 is going to be used in kuwaiba
+  * @type {number}
+  * 1 : ObjectView
+  * 2 : FiberSplitterView
+  * 3 : SpliceBoxView
+  */
+  @property()
+  kuwaiba_graph = 0;
+
   /**
   * The width of the graph.
   * @type {number}
@@ -560,7 +576,7 @@ export class X6 extends LitElement {
   * @default true
   */
   @property()
-  graph_grid: boolean = true;
+  graph_grid: boolean = false;
 
   /**
   * Whether panning is enabled on the graph.
@@ -639,11 +655,119 @@ export class X6 extends LitElement {
   */
   private scrollerPlugin: Scroller | null = null;
   
-  firstUpdated() {
-    const container = this.shadowRoot!.getElementById('container');
-    if (container) {
-      this.graph = new Graph({
-        container,
+  @query('#canvas')
+  target!: HTMLDivElement;
+
+  protected firstUpdated() {
+    if(this.target){
+      switch(this.kuwaiba_graph){
+        case 1:
+          this.initObjectView();
+        break;
+        case 2:
+          this.initFiberSplitterView();
+        break;
+        case 3:
+          this.initSpliceBoxView();
+        break;
+        default:
+          this.initGraph();
+        break;
+      }
+
+      this.eventInitGraph();
+    }
+  }
+
+  private initGraph(){
+    this.graph = new Graph({
+      container: this.target,
+      width: this.graph_width, 
+      height: this.graph_height,
+      grid: this.graph_grid,
+      panning: this.graph_panning,
+      mousewheel: this.graph_mouse_wheel,
+      background: {
+        color: this.graph_background_color,
+      },
+      connecting: {
+        snap: true, 
+        allowBlank: false, 
+        allowNode: true, 
+        allowEdge: false,
+        allowPort: true,
+        allowMulti: 'withPort', 
+        highlight: true,
+      },
+    });
+  }
+
+  private initObjectView(){
+    this.initGraph();
+    if(this.graph){
+      this.graph.zoom(this.graph_zoom);
+
+        /**
+        * Initializes the plugins used for graph manipulation and interaction.
+        */
+        this.scrollerPlugin = new Scroller({
+          enabled:true,
+          pannable: true,
+          pageVisible: true,
+          pageBreak: true,
+          width:600,
+          height: 600,
+          pageWidth: 620,
+          pageHeight: 620,
+          padding: 0,
+          autoResize : true , 
+          
+        });
+
+        this.graph.use(this.scrollerPlugin);
+        this.graph.setScrollbarPosition(600,600);
+        
+        this.graph.use(new Export());
+
+        this.graph.use(new Snapline({enabled: true}));
+
+        this.transformPlugin = new Transform({
+          rotating: false,
+          resizing: {
+            enabled: true,
+            orthogonal: true,
+            minWidth: 20,
+            minHeight: 20,
+            preserveAspectRatio: false,
+          },
+        });
+
+        this.graph.use(this.transformPlugin);
+
+        this.graph.use(new Selection({
+          enabled:true,
+          multiple : false , 
+          movable : true , 
+          showNodeSelectionBox : true , 
+        })); 
+
+        this.createGhost();
+
+        /**
+        * Initializes the event listeners for various cell interactions.
+        * This includes selecting cells, drawing edges, and managing node positions and dimensions.
+        */
+        this.eventCellSelected();
+        this.eventDrawEdge();
+        this.eventGetNodeNewPosition();
+        this.eventGetNodeBackgroundNewDimensions();
+        this.eventResizeNodeBackgroundDblClick();
+    }
+  }
+
+  private initFiberSplitterView(){
+    this.graph = new Graph({
+        container: this.target,
         width: this.graph_width, 
         height: this.graph_height,
         grid: this.graph_grid,
@@ -652,88 +776,97 @@ export class X6 extends LitElement {
         background: {
           color: this.graph_background_color,
         },
-        connecting: {
-          snap: true, 
-          allowBlank: false, 
-          allowNode: true, 
-          allowEdge: false,
-          allowPort: true,
-          allowMulti: 'withPort', 
-          highlight: true,
+        interacting:{
+          nodeMovable(view) {
+            const node = view.cell
+            const { enableMove } = node.getData()
+            return enableMove
+          },
         },
-      });
-
-      this.graph.zoom(this.graph_zoom);
-
-      /**
-      * Initializes the plugins used for graph manipulation and interaction.
-      */
+        connecting: {
+          snap: true,  
+          allowNode: true, 
+          allowMulti: 'withPort', 
+        },
+     });
+     
+    if(this.graph){
       this.scrollerPlugin = new Scroller({
         enabled:true,
         pannable: true,
         pageVisible: true,
         pageBreak: true,
-        width:600,
-        height: 600,
-        pageWidth: 620,
-        pageHeight: 620,
+        width:this.graph_width,
+        height: this.graph_height,
+        pageWidth: this.graph_width,
+        pageHeight: this.graph_height,
         padding: 0,
         autoResize : true , 
-        
       });
 
       this.graph.use(this.scrollerPlugin);
       this.graph.setScrollbarPosition(600,600);
-      
-      this.graph.use(new Export());
+    }
+  }
 
-      this.graph.use(new Snapline({enabled: true}));
-
-      this.transformPlugin = new Transform({
-        rotating: false,
-        resizing: {
-          enabled: true,
-          orthogonal: true,
-          minWidth: 20,
-          minHeight: 20,
-          preserveAspectRatio: false,
+  private initSpliceBoxView(){
+    this.graph = new Graph({
+        container: this.target,
+        width: this.graph_width, 
+        height: this.graph_height,
+        grid: this.graph_grid,
+        panning: this.graph_panning,
+        mousewheel: this.graph_mouse_wheel,
+        background: {
+          color: this.graph_background_color,
         },
+        interacting:{
+          nodeMovable(view) {
+            const node = view.cell
+            const { enableMove } = node.getData()
+            return enableMove
+          },
+        },
+        connecting: {
+          snap: true,  
+          allowNode: true, 
+          allowMulti: 'withPort', 
+        },
+     });
+     
+    if(this.graph){
+      this.scrollerPlugin = new Scroller({
+        enabled:true,
+        pannable: true,
+        pageVisible: true,
+        pageBreak: true,
+        width:this.graph_width,
+        height: this.graph_height,
+        pageWidth: this.graph_width,
+        pageHeight: this.graph_height,
+        padding: 0,
+        autoResize : true , 
       });
 
-      this.graph.use(this.transformPlugin);
-
-      this.graph.use(new Selection({
-        enabled:true,
-        multiple : false , 
-        movable : true , 
-        showNodeSelectionBox : true , 
-      })); 
-
-      this.createGhost();
-
-      /**
-      * Initializes the event listeners for various cell interactions.
-      * This includes selecting cells, drawing edges, and managing node positions and dimensions.
-      */
-      this.eventCellSelected();
-      this.eventDrawEdgeObjectView();
-      this.eventGetNodeNewPosition();
-      this.eventGetNodeBackgroundNewDimensions();
-      this.eventResizeNodeBackgroundDblClick();
-
-      /**
-      * Dispatches a custom event indicating that the graph has been created.
-      *
-      * @fires graph-created
-      * @param {Object} detail - Contains additional information about the event.
-      * @param {string} detail.status - The status of the graph creation.'.
-      */
-      this.dispatchEvent(new CustomEvent('graph-created', {
-        detail: {
-          status: 'success'
-        }
-      }));
+      this.graph.use(this.scrollerPlugin);
+      this.graph.setScrollbarPosition(600,600);
     }
+  }
+
+
+  /**
+  * Dispatches a custom event indicating that the graph has been created.
+  *
+  * @fires graph-created
+  * @param {Object} detail - Contains additional information about the event.
+  * @param {string} detail.status - The status of the graph creation.'.
+  */
+  private eventInitGraph(){
+    this.dispatchEvent(new CustomEvent('graph-created', {
+      detail: {
+        status: 'success'
+      }
+    }));
   }
 
   /**
@@ -930,7 +1063,7 @@ export class X6 extends LitElement {
         height: x6NodeBackground.geometry.dimensions.height,
         imageUrl:
           x6NodeBackground.imgUrl,
-        zIndex:1
+        zIndex:x6NodeBackground.zIndex
       });
     }
   }
@@ -953,6 +1086,43 @@ export class X6 extends LitElement {
   }
 
   /**
+  * Creates a label position configuration for a node based on its position settings.
+  *
+  * This method constructs the label's positioning attributes depending on whether the
+  * label is positioned at the bottom or at the center of the node. The configuration includes
+  * text properties, font size, and reference points for alignment.
+  *
+  * @param node - The node object containing label information, including its position and text.
+  * @returns An object representing the label position configuration.
+  */
+  private createLabelPosition(node: X6Node) {
+    let labelPosition;
+    
+    if (node.labelPosition === 'bottom') {
+      labelPosition = {
+        text: node.labelText,
+        fontSize: 12,
+        refX: 0.5,
+        refY: '100%',
+        refY2: 4,
+        textAnchor: 'middle',
+        textVerticalAnchor: 'top',
+      };
+    } else {
+      labelPosition = {
+        text: node.labelText,
+        fontSize: 10,
+        refX: 0.5,
+        refY: 0.5,
+        textAnchor: 'middle',
+        textVerticalAnchor: 'middle',
+      };
+    }
+    
+    return labelPosition;
+  }
+
+  /**
   * Draws a node in the graph's object view using the specified properties.
   * 
   * This method adds a node with attributes such as position, dimensions, 
@@ -960,13 +1130,10 @@ export class X6 extends LitElement {
   * 
   * @param {X6Node} node - The configuration for the node to be drawn.
   */
-  public drawNodeObjectView(node : X6Node){
+  public drawNode(node : X6Node){
     if(this.graph){
-      // If the label text is empty, the label is set to be hidden.
-      let visibility = 'visible';
-      if(node.labelText.length == 0)
-        visibility = 'hidden'
-
+      const labelPosition = this.createLabelPosition(node);
+      const port = this.createNodePort(node.port);
       this.graph.addNode({
         id: node.id,
         shape: node.shape,
@@ -974,60 +1141,171 @@ export class X6 extends LitElement {
         y: node.geometry.coordinates.y,
         width: node.geometry.dimensions.width ,
         height: node.geometry.dimensions.height,
+        data: { enableMove: node.movable },
         imageUrl:
           node.imgUrl,
-        label: node.labelText,
         attrs: {
+          body: {
+            fill: node.colorFill
+          },
           label: {
-            fontSize: 12,
-            refX: 0.5,
-            refY : '100%' , 
-            refY2 : 4 , 
-            textAnchor: 'middle',
-            textVerticalAnchor : 'top' , 
-            visibility: visibility,
+            ...labelPosition,
           },
         },
         ports: {
-          groups: {
-            group1: {
-              position: {
-                name: 'absolute', 
-                args: { x: '100%', y: '90%' },
-              },
-              attrs: {
-                circle: {
-                  r: 6,
-                  magnet: true,
-                  stroke: '#31d0c6',
-                  fill: '#fff',
-                  strokeWidth: 2,
-                },
-                },
-              },
-            },
-            items: [
-                {
-                  id: 'port1',
-                  group: 'group1',
-                }
-            ],
+          ...port
+        },
+        zIndex: node.zIndex
+      })
+    }
+  }
+
+  /**
+   * Draws a text node in the graph at specified coordinates.
+   *
+   * This method adds a rectangular node to the graph with a label. The node's size is
+   * calculated based on the length of the text provided, and it could be made movable.
+   *
+   * @param id - The unique identifier for the text node.
+   * @param x - The x-coordinate for the position of the text node.
+   * @param y - The y-coordinate for the position of the text node.
+   * @param text - The label text to be displayed on the node.
+   * @param movable - A boolean indicating whether the node can be moved by the user.
+   */
+  public drawText(id: string, x:number, y:number, text:string, movable: boolean){
+    if(this.graph){
+      const padding = 15;
+      this.graph.addNode({
+        id: id,
+        width: text.length * 8 * 0.6 + padding * 2,
+        height: (padding * 2) - 7,
+        x: x,
+        y: y,
+        shape: 'rect',
+        data: { enableMove: movable },
+        attrs: {
+          body:{
+            fill: "#fff0ff",
+            stroke: "#fff0ff",
+            rx: 10,
+            ry: 10,
           },
-          zIndex: 2
+          label: {
+            text: text,
+            fontSize: 10, 
+          }
+        }
       });
     }
   }
 
   /**
-  * Draws an edge in the graph's object view using the specified properties.
+  * Establishes a parent-child relationship between two nodes in the graph.
+  *
+  * This method links a child node to its parent node by retrieving both nodes from the graph
+  * using their unique identifiers. If both nodes exist, the child is added to the parent's
+  * list of children.
+  *
+  * @param idFather - The unique identifier of the parent node.
+  * @param idChild - The unique identifier of the child node.
+  */
+  public setFather(idFather: string, idChild: string){
+    if(this.graph){
+      const father = this.graph.getCellById(idFather);
+      const child = this.graph.getCellById(idChild);
+
+      if(father && child)
+        father.addChild(child);
+    }
+  }
+
+  /**
+  * Creates a port configuration for a node based on a boolean flag.
+  *
+  * This method constructs a port object with specific attributes if the `port` parameter
+  * is true. The port is defined by its position and visual attributes. If `port` is false,
+  * an empty object is returned.
+  *
+  * @param port - A boolean indicating whether to create a port configuration.
+  * @returns An object representing the port configuration or an empty object.
+  */
+  public createNodePort(port: boolean){
+    let nodePort = {};
+
+    if(port){
+      nodePort = {
+        groups: {
+          group1: {
+            position: {
+              name: 'absolute', 
+              args: { x: '100%', y: '90%' },
+            },
+            attrs: {
+              circle: {
+                r: 6,
+                magnet: true,
+                stroke: '#31d0c6',
+                fill: '#fff',
+                strokeWidth: 2,
+              },
+              },
+            },
+          },
+          items: [
+            {
+              id: 'port1',
+              group: 'group1',
+            }
+          ]
+      }
+    }
+
+    return nodePort;
+  }
+
+  /**
+  * Draws an edge in the graph's using the specified properties.
   * 
   * This method adds an edge connecting two nodes, defined by their 
   * source and target IDs.
   * 
   * @param {X6Edge} edge - The configuration for the edge to be drawn.
   */
-  public drawEdgeObjectView(edge: X6Edge){
+  public drawEdge(edge: X6Edge){
     if(this.graph){
+      let labelConfig = {};
+      
+      if (edge.label && edge.label !== "") {
+        labelConfig = {
+          attrs: {
+            text: {
+              text: edge.label,
+              fontSize: 12,
+              fill: '#000000',
+              textAnchor: 'middle',
+              textVerticalAnchor: 'middle',
+            },
+            rect: {
+              ref: 'text',
+              refX: -4,
+              refY: -2,
+              refWidth: '100%',
+              refHeight: '100%',
+              refWidth2: 8,
+              refHeight2: 5,
+              stroke: '#000000',
+              strokeWidth: '1',
+              rx: 5,
+              ry: 5,
+            },
+          },
+          position: {
+            distance: 0.5,
+            offset: 0,
+          },
+        };
+      }
+
       this.graph.addEdge(
         {
           id: edge.id,
@@ -1039,35 +1317,7 @@ export class X6 extends LitElement {
               targetMarker: null,
             }
           },  
-          label:
-            {
-              attrs: {
-                text: {
-                  text: edge.label,
-                  fontSize: 12,
-                  fill: '#000000',
-                  textAnchor: 'middle',
-                  textVerticalAnchor: 'middle',
-                },
-                rect: {
-                  ref: 'text',
-                  refX: -4,
-                  refY: -2,
-                  refWidth: '100%',
-                  refHeight: '100%',
-                  refWidth2: 8,
-                  refHeight2: 5,
-                  stroke: '#000000',
-                  strokeWidth: '1',
-                  rx: 5,
-                  ry: 5,
-                },
-              },
-              position: {
-                distance: 0.5,
-                offset: 0 ,
-              }
-            }
+          ...(edge.label ? { label: labelConfig } : {}),
         }
       );
     }
@@ -1085,7 +1335,7 @@ export class X6 extends LitElement {
   * @param {string} detail.edge.idSource - The ID of the source node for the edge.
   * @param {string} detail.edge.idTarget - The ID of the target node for the edge.
   */
-  public eventDrawEdgeObjectView(){
+  public eventDrawEdge(){
     if(this.graph){
       this.graph.on('edge:connected', ({ edge }) => {
         edge.setAttrs(
@@ -1452,8 +1702,7 @@ export class X6 extends LitElement {
 
   protected render(): unknown {
     return html`
-      <h2>Kuwaiba Open Source Network Inventory</h2>
-      <div id="container"></div>
+      <div id="canvas" style="height: 100%; width: 100%;"></div>
       `;
   }
 
