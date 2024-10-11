@@ -51,22 +51,22 @@ public class X6Constants {
    public static final int GRAPH_HEIGHT = 600;
    
    /**
-    * The width of the graph in pixels.
+    * The width of the graph in pixels for fiber splitter view.
     */
    public static final int GRAPH_WIDTH_FIBER_SPLITTER = 1500;
 
    /**
-    * The height of the graph in pixels.
+    * The height of the graph in pixels for fiber splitter view.
     */
    public static final int GRAPH_HEIGHT_FIBER_SPLITTER = 700;
    
    /**
-    * The width of the graph in pixels.
+    * The width of the graph in pixels for splice box view.
     */
    public static final int GRAPH_WIDTH_SPLICE_BOX = 1500;
 
    /**
-    * The height of the graph in pixels.
+    * The height of the graph in pixels for splice box view.
     */
    public static final int GRAPH_HEIGHT_SPLICE_BOX = 700;
 

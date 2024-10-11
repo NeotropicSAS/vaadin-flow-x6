@@ -20,7 +20,6 @@ import com.neotropic.flow.component.antvx6.objects.X6Edge;
 import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.neotropic.flow.component.antvx6.objects.X6NodeBackground;
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
