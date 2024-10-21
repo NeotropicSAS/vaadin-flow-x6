@@ -15,45 +15,26 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
+
 /**
- * Represents a cell in the X6 graph model.
- * This abstract class serves as a base for {@link X6Node} and {@link X6NodeBackground}.
+ * Represents a cell in the X6 graph.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
-public abstract class X6Cell {
+public class X6Cell {
     private String id;
     private Geometry geometry;
     private String shape;
-    private String imgUrl;
-    private String colorFill;
-    private boolean movable;
-    private boolean port;
-    private int zIndex;
-    
+    private int borderRadius;
+
     public X6Cell(){
-        this.geometry = new Geometry();
+        this.borderRadius = 0;
     }
     
-    public X6Cell(String id, String shape, double x, double y,double width, double height, boolean movable) {
+    public X6Cell(String id, double x, double y, double width, double height, String shape) {
         this.id = id;
-        this.shape = shape;
         this.geometry = new Geometry(x, y, width, height);
-        this.imgUrl = "";
-        this.colorFill = "";
-        this.movable = movable;
-        this.port = false;
-        this.zIndex = 1;
-    }
-    
-    public X6Cell(String id, String shape, double x, double y,double width, double height, String imgUrl, boolean port, int zIndex) {
-        this.id = id;
         this.shape = shape;
-        this.geometry = new Geometry(x, y, width, height);
-        this.imgUrl = imgUrl;
-        this.colorFill = "";
-        this.movable = true;
-        this.port = port;
-        this.zIndex = zIndex;
+        this.borderRadius = 0;
     }
 
     public String getId() {
@@ -80,48 +61,12 @@ public abstract class X6Cell {
         this.shape = shape;
     }
 
-    public String getImgUrl() {
-        return imgUrl;
+    public int getBorderRadius() {
+        return borderRadius;
     }
 
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
-    }
-
-    public String getColorFill() {
-        return colorFill;
-    }
-
-    public void setColorFill(String colorFill) {
-        this.colorFill = colorFill;
-    }
-
-    public boolean isMovable() {
-        return movable;
-    }
-
-    public void setMovable(boolean movable) {
-        this.movable = movable;
-    }
-
-    public boolean isPort() {
-        return port;
-    }
-
-    public void setPort(boolean port) {
-        this.port = port;
-    }
-
-    public int getzIndex() {
-        return zIndex;
-    }
-
-    public void setzIndex(int zIndex) {
-        this.zIndex = zIndex;
+    public void setBorderRadius(int borderRadius) {
+        this.borderRadius = borderRadius;
     }
     
-    @Override
-    public String toString() {
-        return "X6Cell{" + "id=" + id + ", geometry=" + geometry + ", shape=" + shape + ", imgUrl=" + imgUrl + '}';
-    }
 }

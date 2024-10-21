@@ -20,6 +20,7 @@ import com.neotropic.flow.component.antvx6.objects.X6Edge;
 import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.neotropic.flow.component.antvx6.objects.X6NodeBackground;
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
+import com.neotropic.flow.component.antvx6.objects.X6NodeText;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
@@ -43,6 +44,7 @@ import java.util.List;
 @NpmPackage(value = "@antv/x6-plugin-export", version = "2.1.6")
 @NpmPackage(value = "@antv/x6-plugin-selection", version = "2.2.2")
 @NpmPackage(value = "@antv/x6-plugin-scroller", version = "2.0.10")
+@NpmPackage(value = "@antv/x6-plugin-minimap", version = "2.0.7")
 public class AntvX6 extends Div {
     /*
     * Basic graph configuration properties
@@ -70,10 +72,13 @@ public class AntvX6 extends Div {
     */
     private List<X6Node> nodes;
     /*
+    * List of text nodes present in the graph.
+    */
+    private List<X6NodeText> textNodes;
+    /*
     * List of edges present in the graph.
     */
     private List<X6Edge> edges;
-    
     /*
     * List of listeners.
     */
@@ -82,9 +87,10 @@ public class AntvX6 extends Div {
     public AntvX6() {
         this.nodeBackground = new X6NodeBackground();
         this.nodes = new ArrayList();
+        this.textNodes = new ArrayList();
         this.edges = new ArrayList();
         this.lstListeners = new ArrayList();
-    }    
+    }        
     
     /**
     * Retrieves the ID of the node background.
@@ -252,30 +258,46 @@ public class AntvX6 extends Div {
     * 
     * @param background the X6NodeBackground object
     */
-    public void drawNodeBackground(X6NodeBackground background){
+    public void drawNodeBackground(X6NodeBackground background) {
         getElement().executeJs(
             "this.createBackground({ " +
-            "id: $0, shape: $1, " +
+            "id: $0, " +
             "geometry: { " +
-            "  coordinates: { x: $2, y: $3 }, " +
-            "  dimensions: { width: $4, height: $5 } " +
+            "  coordinates: { x: $1, y: $2 }, " +
+            "  dimensions: { width: $3, height: $4 } " +
             "}, " +
-            "imgUrl: $6, colorFill: $7, movable: $8, port: $9, zIndex: $10,  " +
+            "shape: $5, " +
+            "borderRadius: $6, " +
+            "imgUrl: $7, " +
+            "fillColor: $8, " +
+            "strokeColor: $9, " +
+            "strokeWidth: $10, " +
+            "movable: $11, " +
+            "zIndex: $12, " +
+            "parentId: $13, " +
+            "labelText: $14, " +
+            "labelPosition: $15 " +
             "})",
             background.getId(),
-            background.getShape(),
             background.getGeometry().getCoordinates().getX(),
             background.getGeometry().getCoordinates().getY(),
             background.getGeometry().getDimensions().getWidth(),
             background.getGeometry().getDimensions().getHeight(),
+            background.getShape(),
+            background.getBorderRadius(),
             background.getImgUrl(),
-            background.getColorFill(),
+            background.getFillColor(),
+            background.getStrokeColor(),
+            background.getStrokeWidth(),
             background.isMovable(),
-            background.isPort(),
-            background.getzIndex()
+            background.getzIndex(),
+            background.getParentId(),
+            background.getLabelText(),
+            background.getLabelPosition()
         );
         this.nodeBackground = background;
     }
+
     
     /**
     * Removes the node background of the the graph.
@@ -289,7 +311,6 @@ public class AntvX6 extends Div {
         this.nodeBackground.setGeometry(new Geometry(0, 0 , 0, 0));
         this.nodeBackground.setImgUrl("");
         this.nodeBackground.setShape(X6Constants.SHAPE_IMAGE);
-        this.nodeBackground.setId("");
     }
     
     /**
@@ -303,45 +324,110 @@ public class AntvX6 extends Div {
     public void drawNode(X6Node node) {
         getElement().executeJs(
             "this.drawNode({ " +
-            "id: $0, shape: $1, " +
+            "id: $0, " +
             "geometry: { " +
-            "  coordinates: { x: $2, y: $3 }, " +
-            "  dimensions: { width: $4, height: $5 } " +
+            "  coordinates: { x: $1, y: $2 }, " +
+            "  dimensions: { width: $3, height: $4 } " +
             "}, " +
-            "imgUrl: $6, colorFill: $7, movable: $8, port: $9, zIndex: $10,  " +
-            "labelText: $11, labelColor: $12, labelPosition: $13 " +
+            "shape: $5, " +
+            "borderRadius: $6, " +
+            "imgUrl: $7, " +
+            "fillColor: $8, " +
+            "strokeColor: $9, " +
+            "strokeWidth: $10, " +
+            "movable: $11, " +
+            "zIndex: $12, " +
+            "parentId: $13, " +
+            "labelText: $14, " +
+            "labelPosition: $15, " +
+            "port: $16 " +  
             "})",
             node.getId(),
-            node.getShape(),
             node.getGeometry().getCoordinates().getX(),
             node.getGeometry().getCoordinates().getY(),
             node.getGeometry().getDimensions().getWidth(),
             node.getGeometry().getDimensions().getHeight(),
+            node.getShape(),
+            node.getBorderRadius(),
             node.getImgUrl(),
-            node.getColorFill(),
+            node.getFillColor(),
+            node.getStrokeColor(),
+            node.getStrokeWidth(),
             node.isMovable(),
-            node.isPort(),
             node.getzIndex(),
+            node.getParentId(),
             node.getLabelText(),
-            node.getLabelColor(),
-            node.getLabelPosition()
+            node.getLabelPosition(),
+            node.isPort()
         );
         this.nodes.add(node);
     }
-    
+
     /**
     * Draws a visual representation of a text for a node in the graph.
     *
     * This method constructs and sends the necessary data to the frontend
     * to create a text node. It calls the JavaScript function `drawText`.
     * 
-     * @param id text id
-     * @param x text coordinate in x
-     * @param y text coordinate in y
-     * @param label label of the text
     */
-    public void drawText(String id, double x , double y, String label){
-        this.getElement().callJsFunction("drawText",id, x, y, label,false);
+    public void drawText(X6NodeText nodeText) {
+        getElement().executeJs(
+            "this.drawText({ " +
+            "id: $0, " +
+            "geometry: { " +
+            "  coordinates: { x: $1, y: $2 }, " +
+            "  dimensions: { width: $3, height: $4 } " +
+            "}, " +
+            "shape: $5, " +
+            "borderRadius: $6, " +
+            "imgUrl: $7, " +
+            "fillColor: $8, " +
+            "strokeColor: $9, " +
+            "strokeWidth: $10, " +
+            "movable: $11, " +
+            "zIndex: $12, " +
+            "parentId: $13, " +
+            "labelText: $14, " +
+            "labelPosition: $15, " +  
+            "labelPositionRelative: $16 " +   
+            "})",
+            nodeText.getId(),
+            nodeText.getGeometry().getCoordinates().getX(),
+            nodeText.getGeometry().getCoordinates().getY(),
+            nodeText.getGeometry().getDimensions().getWidth(),
+            nodeText.getGeometry().getDimensions().getHeight(),
+            nodeText.getShape(),
+            nodeText.getBorderRadius(),
+            nodeText.getImgUrl(),
+            nodeText.getFillColor(),
+            nodeText.getStrokeColor(),
+            nodeText.getStrokeWidth(),
+            nodeText.isMovable(),
+            nodeText.getzIndex(),
+            nodeText.getParentId(),
+            nodeText.getLabelText(),
+            nodeText.getLabelPosition(),
+
+            nodeText.getLabelPositionRelative()
+        );
+        this.textNodes.add(nodeText);
+    }
+
+     /**
+    * Adjusts the dimensions of a node based on its children.
+    * @param id - The unique identifier of the node whose dimensions are to be adjusted.
+    */
+    public void adjustNodeDimensions(String nodeId){
+        this.getElement().callJsFunction("adjustNodeDimensions", nodeId);
+    }
+    
+    /**
+  * Centers the children of a specified node horizontally within the parent node.
+  *
+  * @param id - The unique identifier of the parent node whose children will be centered.
+  */
+    public void centerChildren(String nodeId){
+        this.getElement().callJsFunction("centerChildren", nodeId);
     }
     
     /**
@@ -350,11 +436,11 @@ public class AntvX6 extends Div {
     * This method constructs and sends the necessary data to the frontend
     * to link a child node to its parent node. It calls the JavaScript function `setFather`.
     *
-    * @param idFather the id of the parent node
+    * @param idParent the id of the parent node
     * @param idChild the id of the child node
     */
-    public void setFather(String idFather, String idChild){
-        this.getElement().callJsFunction("setFather", idFather, idChild);
+    public void setParent(String idParent, String idChild){
+        this.getElement().callJsFunction("setParent", idParent, idChild);
     }
     
     /**
@@ -386,29 +472,12 @@ public class AntvX6 extends Div {
     * to visually select a node. It calls the JavaScript function
     * `selectNode`.
     * 
-    * @param node the X6Node object to be select.
+    * @param id id of the X6Node to be select.
     */
-    public void selectNode(X6Node node){
-        getElement().executeJs(
-            "this.selectNode({ " +
-            "id: $0, shape: $1, " +
-            "geometry: { " +
-            "  coordinates: { x: $2, y: $3 }, " +
-            "  dimensions: { width: $4, height: $5 } " +
-            "}, " +
-            "imgUrl: $6, labelText: $7, labelColor: $8 " +
-            "})",
-            node.getId(),
-            node.getShape(),
-            node.getGeometry().getCoordinates().getX(),
-            node.getGeometry().getCoordinates().getY(),
-            node.getGeometry().getDimensions().getWidth(),
-            node.getGeometry().getDimensions().getHeight(),
-            node.getImgUrl(),
-            node.getLabelText(),
-            node.getLabelColor()
-        );
+    public void selectNode(String id) {
+        getElement().callJsFunction("selectNode", id);
     }
+
     
     /**
     * Updates the label state of all nodes in the graph.
@@ -430,6 +499,27 @@ public class AntvX6 extends Div {
     public void updateNodesLabelColor(){
         getElement().executeJs("this.updateNodesLabelColor();");
     }
+    
+    /**
+    * Sets the absolute positions of parent nodes based on their widths.
+    * 
+    * This method positions parent nodes, which may have multiple children, 
+    * starting from a specified horizontal offset. 
+    *
+    * @param parentsId - A JSON string containing the unique identifiers of the parent nodes to be positioned.
+    */
+    public void setPositionAbsoluteParent(List<String> parentsId) {
+        StringBuilder jsonArray = new StringBuilder("[");
+        for (int i = 0; i < parentsId.size(); i++) {
+            jsonArray.append("\"").append(parentsId.get(i)).append("\"");
+            if (i < parentsId.size() - 1) {
+                jsonArray.append(","); 
+            }
+        }
+        jsonArray.append("]");
+        this.getElement().callJsFunction("setPositionAbsoluteParent", jsonArray.toString());
+    }
+  
 
     /**
     * Exports the current graph as a JPEG image.
@@ -550,7 +640,14 @@ public class AntvX6 extends Div {
     public void setEdges(List<X6Edge> edges) {
         this.edges = edges;
     }
-    
+
+    public List<X6NodeText> getTextNodes() {
+        return textNodes;
+    }
+
+    public void setTextNodes(List<X6NodeText> textNodes) {
+        this.textNodes = textNodes;
+    }
     
     /**
     * Event fired when a graph has been created.
@@ -698,7 +795,7 @@ public class AntvX6 extends Div {
     /**
     * Event fired when a edge has been created.
     */
-   @DomEvent("edge-created")
+    @DomEvent("edge-created")
     public static class EdgeCreatededEvent extends ComponentEvent<AntvX6> {
         private final String id;
         private final String idSource;
@@ -725,7 +822,6 @@ public class AntvX6 extends Div {
         public String getIdTarget() {
             return idTarget;
         }
-
     }
-
+  
 }

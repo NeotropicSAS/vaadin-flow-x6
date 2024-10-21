@@ -19,115 +19,154 @@ package com.neotropic.flow.component.antvx6.objects;
  * Represents a node in the X6 graph.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
-public class X6Node extends X6Cell{
-    private String labelText;
-    public String labelPosition;
-    private String labelColor;
+public class X6Node extends X6AbstractNode{
+    private boolean port;
     
     public X6Node(){
         super();
     }
     
-    public X6Node(String id, String shape, double x, double y,double width, double height, String labelText, String labelPosition, boolean movable) {
-        super(id, shape, x, y ,width, height, movable);
-        this.labelText = labelText;
-        this.labelPosition = labelPosition;
-        this.labelColor = "";
-    }
-    
-    public X6Node(String id, String shape, double x, double y,double width, double height, String imgUrl, String labelText, String labelColor) {
-        super(id, shape, x, y ,width, height, imgUrl, true, 2);
-        this.labelText = labelText;
-        this.labelPosition = "bottom";
-        this.labelColor = labelColor;
+    public X6Node(String id, double x, double y,double width, double height, String shape){
+        super(id, x ,y ,width, height, shape);
+        this.port = false;
     }
 
-    @Override
-    public String getId() {
-        return super.getId();
-    }
-    @Override
-    public void setId(String id) {
-        super.setId(id);
+    public boolean isPort() {
+        return port;
     }
 
-    @Override
-    public String getShape() {
-        return super.getShape();
-    }
-
-    @Override
-    public void setShape(String shape) {
-        super.setShape(shape);
+    public void setPort(boolean port) {
+        this.port = port;
     }
     
     @Override
-    public Geometry getGeometry() {
-        return super.getGeometry();
+    public int getBorderRadius() {
+        return super.getBorderRadius(); 
     }
 
     @Override
-    public void setGeometry(Geometry geometry) {
-        super.setGeometry(geometry);
+    public void setBorderRadius(int borderRadius) {
+        super.setBorderRadius(borderRadius); 
     }
 
     @Override
-    public String getImgUrl() {
-        return super.getImgUrl();
+    public void setLabelPosition(String labelPosition) {
+        super.setLabelPosition(labelPosition); 
+    }
+
+    @Override
+    public String getLabelPosition() {
+        return super.getLabelPosition(); 
+    }
+
+    @Override
+    public void setLabelText(String labelText) {
+        super.setLabelText(labelText); 
+    }
+
+    @Override
+    public String getLabelText() {
+        return super.getLabelText(); 
+    }
+
+    @Override
+    public void setParentId(String parentId) {
+        super.setParentId(parentId); 
+    }
+
+    @Override
+    public String getParentId() {
+        return super.getParentId(); 
+    }
+
+    @Override
+    public void setzIndex(int zIndex) {
+        super.setzIndex(zIndex); 
+    }
+
+    @Override
+    public int getzIndex() {
+        return super.getzIndex(); 
+    }
+
+    @Override
+    public void setMovable(boolean movable) {
+        super.setMovable(movable); 
+    }
+
+    @Override
+    public boolean isMovable() {
+        return super.isMovable(); 
+    }
+
+    @Override
+    public void setStrokeWidth(double strokeWidth) {
+        super.setStrokeWidth(strokeWidth); 
+    }
+
+    @Override
+    public double getStrokeWidth() {
+        return super.getStrokeWidth(); 
+    }
+
+    @Override
+    public void setStrokeColor(String strokeColor) {
+        super.setStrokeColor(strokeColor); 
+    }
+
+    @Override
+    public String getStrokeColor() {
+        return super.getStrokeColor(); 
+    }
+
+    @Override
+    public void setFillColor(String fillColor) {
+        super.setFillColor(fillColor); 
+    }
+
+    @Override
+    public String getFillColor() {
+        return super.getFillColor(); 
     }
 
     @Override
     public void setImgUrl(String imgUrl) {
-        super.setImgUrl(imgUrl);
+        super.setImgUrl(imgUrl); 
     }
-    
+
     @Override
-    public String getColorFill(){
-        return super.getColorFill();
+    public String getImgUrl() {
+        return super.getImgUrl(); 
     }
-    
+
     @Override
-    public void setColorFill(String colorFill){
-        super.setColorFill(colorFill);
+    public void setShape(String shape) {
+        super.setShape(shape); 
     }
-    
+
     @Override
-    public boolean isMovable(){
-        return super.isMovable();
+    public String getShape() {
+        return super.getShape(); 
     }
-    
+
     @Override
-    public void setMovable(boolean movable){
-        super.setMovable(movable);
+    public void setGeometry(Geometry geometry) {
+        super.setGeometry(geometry); 
     }
 
-    public String getLabelText() {
-        return labelText;
-    }
-
-    public void setLabelText(String labelText) {
-        this.labelText = labelText;
-    }
-
-    public String getLabelPosition() {
-        return labelPosition;
-    }
-
-    public void setLabelPosition(String labelPosition) {
-        this.labelPosition = labelPosition;
-    }
-
-    public String getLabelColor() {
-        return labelColor;
-    }
-
-    public void setLabelColor(String labelColor) {
-        this.labelColor = labelColor;
-    }
-  
     @Override
-    public String toString() {
-        return  super.toString() + " " + "X6Node{" + "labelText=" + labelText + ", labelColor=" + labelColor + '}';
+    public Geometry getGeometry() {
+        return super.getGeometry(); 
     }
-    
+
+    @Override
+    public void setId(String id) {
+        super.setId(id); 
+    }
+
+    @Override
+    public String getId() {
+        return super.getId(); 
+    }
+
 }

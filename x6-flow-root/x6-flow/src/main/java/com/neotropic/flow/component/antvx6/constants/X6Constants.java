@@ -41,6 +41,11 @@ public class X6Constants {
     public static final int KUWAIBA_SPLICE_BOX_VIEW = 3;
     
     /**
+    * The kuwaiba constant for physical path view.
+    */
+    public static final int KUWAIBA_PHYSICAL_PATH_VIEW = 4;
+    
+    /**
     * The width of the graph in pixels.
     */
    public static final int GRAPH_WIDTH = 600;
@@ -69,11 +74,21 @@ public class X6Constants {
     * The height of the graph in pixels for splice box view.
     */
    public static final int GRAPH_HEIGHT_SPLICE_BOX = 700;
+   
+   /**
+    * The width of the graph in pixels for splice box view.
+    */
+   public static final int GRAPH_WIDTH_PHYSICAL_PATH = 1500;
+
+   /**
+    * The height of the graph in pixels for splice box view.
+    */
+   public static final int GRAPH_HEIGHT_PHYSICAL_PATH = 500;
 
    /**
     * The background color of the graph.
     */
-   public static final String GRAPH_BACKGROUND_COLOR = "#edf6f9";
+   public static final String GRAPH_BACKGROUND_COLOR = "#f8f9fa";
 
    /**
     * Indicates whether the graph should display a grid.
@@ -115,7 +130,13 @@ public class X6Constants {
     */
    public static final String CELL_NODE = "node";
    
+    /**
+    * Represents the position of the label at the bottom of the node.
+    */
    public static final String LABEL_NODE_POSITION_BOTTOM = "bottom";
    
+    /**
+    * Represents the default (center) position of the label on the node.
+    */
    public static final String LABEL_NODE_POSITION_DEFAULT = "default";
 }

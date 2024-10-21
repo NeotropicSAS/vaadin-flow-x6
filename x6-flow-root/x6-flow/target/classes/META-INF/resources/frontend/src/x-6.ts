@@ -22,65 +22,82 @@ import { Transform } from '@antv/x6-plugin-transform';
 import { Export } from '@antv/x6-plugin-export'; 
 import { Selection } from '@antv/x6-plugin-selection'
 import { Scroller } from '@antv/x6-plugin-scroller' 
+import { MiniMap } from '@antv/x6-plugin-minimap';
 
 /**
- * Represents a 2D coordinate with x and y values.
- */
+* Represents a 2D coordinate with x and y values.
+*/
 interface Coordinate{
   x: number;
   y: number;
 }
 
 /**
- * Represents the dimensions of a rectangular area.
- */
+* Represents the dimensions of a node.
+*/
 interface Dimension{
   width: number;
   height: number;
 }
 
 /**
- * Represents geometric information including coordinates and dimensions.
- */
+* Represents geometric information including coordinates and dimensions.
+*/
 interface Geometry {
   coordinates: Coordinate;
   dimensions: Dimension;
 }
 
 /**
-* Represents the cell in the x6 graph model.
-* it serves as a base for X6Node and X6NodeBackground.
+* Represents a cell in the graph.
 */
 interface X6Cell{
   id: string;
   shape: string;
   geometry: Geometry;
+  borderRadius: number;
+}
+
+/**
+* Represents a node in the graph, extending the base cell properties.
+*/
+interface X6AbstractNode extends X6Cell{
   imgUrl: string;
-  colorFill: string;
+  fillColor: string;
+  strokeColor: string,
+  strokeWidth: number,
   movable: boolean;
-  port: boolean;
   zIndex : number;
-}
-
-/**
- * Represents the background of a node in a graph.
- */
-interface X6NodeBackground extends X6Cell{
-
-}
-
-/**
- * Represents a node in a graph.
- */
-interface X6Node extends X6Cell{
+  parentId: string;
   labelText: string;
   labelPosition: string;
-  labelColor: string;
 }
 
 /**
- * Represents an edge connecting two nodes in a graph.
- */
+* Represents a background node in the graph.
+*/
+interface X6NodeBackground extends X6AbstractNode{
+
+}
+
+/**
+* Represents a node in the graph.
+*/
+interface X6Node extends X6AbstractNode{
+  port: boolean;
+}
+
+/**
+* Represents a text node in the graph.
+*/
+interface X6NodeText extends X6AbstractNode{
+  // position respect to its parent node (top, bottom)
+  labelPositionRelative: string;
+}
+
+/**
+* Represents an edge connecting two nodes in a graph.
+*/
 interface X6Edge{
   id: string;
   idSource: string;
@@ -528,15 +545,59 @@ export class X6 extends LitElement {
       border-top: 1px dashed #bdbdbd;
     }
 
+    .x6-widget-minimap {
+      position: relative;
+      display: table-cell;
+      box-sizing: border-box;
+      overflow: hidden;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #fff;
+      user-select: none;
+    }
+    .x6-widget-minimap .x6-graph {
+      display: inline-block;
+      box-shadow: 0 0 4px 0 #eee;
+      cursor: pointer;
+    }
+    .x6-widget-minimap .x6-graph > svg {
+      pointer-events: none;
+      shape-rendering: optimizespeed;
+    }
+    .x6-widget-minimap .x6-graph .x6-node * {
+      /* stylelint-disable-next-line */
+      vector-effect: initial;
+    }
+    .x6-widget-minimap-viewport {
+      position: absolute;
+      box-sizing: content-box !important;
+      margin: -2px 0 0 -2px;
+      border: 2px solid #31d0c6;
+      cursor: move;
+    }
+    .x6-widget-minimap-viewport-zoom {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      box-sizing: border-box;
+      width: 12px;
+      height: 12px;
+      margin: 0 -6px -6px 0;
+      background-color: #fff;
+      border: 2px solid #31d0c6;
+      border-radius: 50%;
+      cursor: nwse-resize;
+    }
   `;
-
 
   /**
   * the view for which x6 is going to be used in kuwaiba
   * @type {number}
+  * 0 : Default view
   * 1 : ObjectView
   * 2 : FiberSplitterView
   * 3 : SpliceBoxView
+  * 4 : PhysicalPathView
   */
   @property()
   kuwaiba_graph = 0;
@@ -558,10 +619,10 @@ export class X6 extends LitElement {
   /**
   * The background color of the graph.
   * @type {string}
-  * @default '#edf6f9'
+  * @default '#ffffff'
   */
   @property()
-  graph_background_color: string = '#edf6f9';
+  graph_background_color: string = '#ffffff';
 
   /**
   * The ID of the node background image for the graph.
@@ -573,7 +634,7 @@ export class X6 extends LitElement {
   /**
   * Whether to show the grid on the graph.
   * @type {boolean}
-  * @default true
+  * @default false
   */
   @property()
   graph_grid: boolean = false;
@@ -655,8 +716,17 @@ export class X6 extends LitElement {
   */
   private scrollerPlugin: Scroller | null = null;
   
+  /*
+  * The main canvas element for rendering the graph. 
+  */
   @query('#canvas')
   target!: HTMLDivElement;
+
+  /*
+  * The minimap element for providing an overview of the graph.
+  */
+  @query('#minimap')
+  minimap!: HTMLDivElement;
 
   protected firstUpdated() {
     if(this.target){
@@ -670,15 +740,24 @@ export class X6 extends LitElement {
         case 3:
           this.initSpliceBoxView();
         break;
+        case 4:
+          this.initPhysicalPathView();
+        break;
         default:
           this.initGraph();
         break;
       }
 
+      /*
+      * Launches an event indicating that the graph has been initialized.
+      */
       this.eventInitGraph();
     }
   }
 
+  /**
+  * Initializes the graph with basic settings.
+  */
   private initGraph(){
     this.graph = new Graph({
       container: this.target,
@@ -702,6 +781,38 @@ export class X6 extends LitElement {
     });
   }
 
+  /**
+  * Initializes the graph with interactions.
+  */
+  private initGraphWithInteractions(){
+    this.graph = new Graph({
+      container: this.target,
+      width: this.graph_width, 
+      height: this.graph_height,
+      grid: this.graph_grid,
+      panning: this.graph_panning,
+      mousewheel: this.graph_mouse_wheel,
+      background: {
+        color: this.graph_background_color,
+      },
+      interacting:{
+        nodeMovable(view) {
+          const node = view.cell
+          const { enableMove } = node.getData()
+          return enableMove
+        },
+      },
+      connecting: {
+        snap: true,  
+        allowNode: true, 
+        allowMulti: 'withPort', 
+      },
+   });
+  }
+
+  /**
+  * Initializes the graph for the Kuwaiba ObjectView.
+  */
   private initObjectView(){
     this.initGraph();
     if(this.graph){
@@ -765,31 +876,11 @@ export class X6 extends LitElement {
     }
   }
 
+  /**
+  * Initializes the graph for the Kuwaiba FiberSplitterView.
+  */
   private initFiberSplitterView(){
-    this.graph = new Graph({
-        container: this.target,
-        width: this.graph_width, 
-        height: this.graph_height,
-        grid: this.graph_grid,
-        panning: this.graph_panning,
-        mousewheel: this.graph_mouse_wheel,
-        background: {
-          color: this.graph_background_color,
-        },
-        interacting:{
-          nodeMovable(view) {
-            const node = view.cell
-            const { enableMove } = node.getData()
-            return enableMove
-          },
-        },
-        connecting: {
-          snap: true,  
-          allowNode: true, 
-          allowMulti: 'withPort', 
-        },
-     });
-     
+    this.initGraphWithInteractions(); 
     if(this.graph){
       this.scrollerPlugin = new Scroller({
         enabled:true,
@@ -798,8 +889,8 @@ export class X6 extends LitElement {
         pageBreak: true,
         width:this.graph_width,
         height: this.graph_height,
-        pageWidth: this.graph_width,
-        pageHeight: this.graph_height,
+        pageWidth: this.graph_width + 20,
+        pageHeight: this.graph_height + (this.graph_height*0.8),
         padding: 0,
         autoResize : true , 
       });
@@ -809,31 +900,11 @@ export class X6 extends LitElement {
     }
   }
 
+  /**
+  * Initializes the graph for the Kuwaiba SpliceBoxView.
+  */
   private initSpliceBoxView(){
-    this.graph = new Graph({
-        container: this.target,
-        width: this.graph_width, 
-        height: this.graph_height,
-        grid: this.graph_grid,
-        panning: this.graph_panning,
-        mousewheel: this.graph_mouse_wheel,
-        background: {
-          color: this.graph_background_color,
-        },
-        interacting:{
-          nodeMovable(view) {
-            const node = view.cell
-            const { enableMove } = node.getData()
-            return enableMove
-          },
-        },
-        connecting: {
-          snap: true,  
-          allowNode: true, 
-          allowMulti: 'withPort', 
-        },
-     });
-     
+    this.initGraphWithInteractions();
     if(this.graph){
       this.scrollerPlugin = new Scroller({
         enabled:true,
@@ -853,6 +924,41 @@ export class X6 extends LitElement {
     }
   }
 
+  /**
+  * Initializes the graph for the Kuwaiba PhysicalPathView.
+  */
+  private initPhysicalPathView(){
+    this.initGraphWithInteractions();
+    if(this.graph){
+      this.scrollerPlugin = new Scroller({
+        enabled:true,
+        pannable: true,
+        pageVisible: true,
+        pageBreak: true,
+        width:this.graph_width,
+        height: this.graph_height,
+        pageWidth: this.graph_width,
+        pageHeight: this.graph_height,
+        padding: 0,
+        autoResize : true , 
+      });
+
+      this.graph.use(this.scrollerPlugin);
+      this.graph.setScrollbarPosition(600,600);
+
+      this.graph.use(new Export());
+
+      if(this.minimap){
+        const minimap = new MiniMap({
+          container: this.minimap,
+          width: 200, 
+          height: 160, 
+        });
+  
+        this.graph.use(minimap);
+      }
+    }
+  }
 
   /**
   * Dispatches a custom event indicating that the graph has been created.
@@ -930,14 +1036,16 @@ export class X6 extends LitElement {
   /**
   * Selects a node in the graph and centers the view on it.
   * 
-  * @param {X6Node} node - The node to select, identified by its ID.
+  * @param {string} id - The id of the node to select.
   */
-  public selectNode(node: X6Node){
+  public selectNode(id: string){
     if(this.graph){
-      const nodeCell = this.graph.getCellById(node.id);
-      if(nodeCell && node.id !== this.graph_node_background_id){
-        this.graph.select(nodeCell);
-        this.graph.centerCell(nodeCell);
+      if(id){
+        const nodeCell = this.graph.getCellById(id);
+        if(nodeCell && id !== this.graph_node_background_id){
+          this.graph.select(nodeCell);
+          this.graph.centerCell(nodeCell);
+        }
       }
     }
   }
@@ -1042,28 +1150,28 @@ export class X6 extends LitElement {
   * such as position, dimensions, and shape based on the provided 
   * X6NodeBackground object.
   * 
-  * @param {X6NodeBackground} x6NodeBackground - The background node configuration.
+  * @param {X6NodeBackground} X6NodeBackground - The background node configuration.
   */
-  public createBackground(x6NodeBackground : X6NodeBackground){
+  public createBackground(X6NodeBackground : X6NodeBackground){
     if(this.graph){
       // If another background existed, remove it.
       if(this.graph_node_background_id){
-          const oldBackground = this.graph.getCellById(this.graph_node_background_id);
-          if(oldBackground)
-            this.graph.removeCell(oldBackground);
+        const oldBackground = this.graph.getCellById(this.graph_node_background_id);
+        if(oldBackground)
+          this.graph.removeCell(oldBackground);
       }
       
-      this.graph_node_background_id = x6NodeBackground.id;
+      this.graph_node_background_id = X6NodeBackground.id;
       this.graph.addNode({
-        id:  x6NodeBackground.id,
-        shape: x6NodeBackground.shape,
-        x: x6NodeBackground.geometry.coordinates.x,
-        y: x6NodeBackground.geometry.coordinates.y,
-        width: x6NodeBackground.geometry.dimensions.width,
-        height: x6NodeBackground.geometry.dimensions.height,
+        id:  X6NodeBackground.id,
+        shape: X6NodeBackground.shape,
+        x: X6NodeBackground.geometry.coordinates.x,
+        y: X6NodeBackground.geometry.coordinates.y,
+        width: X6NodeBackground.geometry.dimensions.width,
+        height: X6NodeBackground.geometry.dimensions.height,
         imageUrl:
-          x6NodeBackground.imgUrl,
-        zIndex:x6NodeBackground.zIndex
+        X6NodeBackground.imgUrl,
+        zIndex:X6NodeBackground.zIndex
       });
     }
   }
@@ -1123,10 +1231,7 @@ export class X6 extends LitElement {
   }
 
   /**
-  * Draws a node in the graph's object view using the specified properties.
-  * 
-  * This method adds a node with attributes such as position, dimensions, 
-  * visibility of the label, and port configuration.
+  * Draws a node in the graph using the specified properties.
   * 
   * @param {X6Node} node - The configuration for the node to be drawn.
   */
@@ -1146,7 +1251,11 @@ export class X6 extends LitElement {
           node.imgUrl,
         attrs: {
           body: {
-            fill: node.colorFill
+            fill: node.fillColor,
+            stroke: node.strokeColor,
+            strokeWidth: node.strokeWidth,
+            rx: node.borderRadius,
+            ry: node.borderRadius
           },
           label: {
             ...labelPosition,
@@ -1157,46 +1266,75 @@ export class X6 extends LitElement {
         },
         zIndex: node.zIndex
       })
+
+      this.setParent(node.parentId, node.id);
     }
   }
 
   /**
-   * Draws a text node in the graph at specified coordinates.
-   *
-   * This method adds a rectangular node to the graph with a label. The node's size is
-   * calculated based on the length of the text provided, and it could be made movable.
-   *
-   * @param id - The unique identifier for the text node.
-   * @param x - The x-coordinate for the position of the text node.
-   * @param y - The y-coordinate for the position of the text node.
-   * @param text - The label text to be displayed on the node.
-   * @param movable - A boolean indicating whether the node can be moved by the user.
-   */
-  public drawText(id: string, x:number, y:number, text:string, movable: boolean){
+  * Draws a text node in the graph using the specified properties.
+  * 
+  * @param {X6NodeText} nodeText - The configuration for the text node to be drawn.
+  */
+  public drawText(nodeText : X6NodeText){
     if(this.graph){
+      let position = this.calculateLabelPosition(nodeText);
+
       const padding = 15;
       this.graph.addNode({
-        id: id,
-        width: text.length * 8 * 0.6 + padding * 2,
-        height: (padding * 2) - 7,
-        x: x,
-        y: y,
-        shape: 'rect',
-        data: { enableMove: movable },
+        id: nodeText.id,
+        width: nodeText.labelText.length * 8 * 0.6 + padding * 2,
+        height: (padding * 2) - 10,
+        x: position.x,
+        y: position.y,
+        shape: nodeText.shape,
+        data: { enableMove: nodeText.movable },
         attrs: {
           body:{
-            fill: "#fff0ff",
-            stroke: "#fff0ff",
-            rx: 10,
-            ry: 10,
+            fill: nodeText.fillColor,
+            stroke: nodeText.strokeColor,
+            strokeWidth: nodeText.strokeWidth,
+            rx: nodeText.borderRadius,
+            ry: nodeText.borderRadius,
           },
           label: {
-            text: text,
+            text: nodeText.labelText,
             fontSize: 10, 
           }
         }
       });
+
+      this.setParent(nodeText.parentId, nodeText.id);
     }
+  }
+
+  /**
+  * Calculates the position of a label for a text node that serves as a label for its parent node.
+  * 
+  * @param nodeText - The text node representing the label, which is a child of a parent node.
+  * @returns An object containing the calculated x and y coordinates for the label position 
+  * relative to the parent node (e.g., positioning above or below the parent node).
+  */
+  private calculateLabelPosition(nodeText: X6NodeText) {
+    let positionX = nodeText.geometry.coordinates.x;
+    let positionY = nodeText.geometry.coordinates.y;
+
+    if(this.graph){   
+      const parent = this.graph.getCellById(nodeText.parentId);
+      if (parent && nodeText.labelPositionRelative) {
+        let xCenterTop = parent.getBBox().x + (parent.getBBox().width / 2);
+        if (nodeText.labelPositionRelative === 'top') {
+          positionX = xCenterTop - ((nodeText.labelText.length * 8 * 0.6 + 15 * 2) / 2);
+          positionY = parent.getBBox().y + 2;
+        }
+        if (nodeText.labelPositionRelative === 'bottom') {
+          positionX = xCenterTop - ((nodeText.labelText.length * 8 * 0.6 + 15 * 2) / 2);
+          positionY = parent.getBBox().y + parent.getBBox().height + 2;
+        }
+      }
+    }
+  
+    return { x: positionX, y: positionY };
   }
 
   /**
@@ -1206,16 +1344,113 @@ export class X6 extends LitElement {
   * using their unique identifiers. If both nodes exist, the child is added to the parent's
   * list of children.
   *
-  * @param idFather - The unique identifier of the parent node.
+  * @param idParent - The unique identifier of the parent node.
   * @param idChild - The unique identifier of the child node.
   */
-  public setFather(idFather: string, idChild: string){
+  public setParent(idParent: string, idChild: string){
     if(this.graph){
-      const father = this.graph.getCellById(idFather);
-      const child = this.graph.getCellById(idChild);
+      if(idParent && idChild){
+        const father = this.graph.getCellById(idParent);
+        const child = this.graph.getCellById(idChild);
+  
+        if(father && child)
+          father.addChild(child);
+      }
+    }
+  }
 
-      if(father && child)
-        father.addChild(child);
+  /**
+  * Adjusts the dimensions of a node based on its children.
+  * 
+  * This method calculates the total width required for the node based on the
+  * widths of its child nodes and adjusts the node's size accordingly. 
+  *
+  * @param id - The unique identifier of the node whose dimensions are to be adjusted.
+  */
+  public adjustNodeDimensions(id: string){
+    if (this.graph) {
+      const currentNode = this.graph.getCellById(id);
+      const children = currentNode.getChildren();
+      let omega = 60;
+      let maxChildHeight = 0;
+
+      if(children && children.length > 0){
+        const childrenSize = children.length;
+        let totalWidth = 0;
+
+        if(childrenSize != 1)
+          omega = 80*(children.length -1) + 60;
+
+        children.forEach(child => {
+          if(child.getBBox().height > maxChildHeight)
+            maxChildHeight = child.getBBox().height;
+          totalWidth += child.getBBox().width;
+        });
+
+        currentNode.prop({
+          size: {
+            width: totalWidth + omega,
+            height: maxChildHeight + 50
+          }
+        });
+      }
+    }
+  }
+
+  /**
+  * Centers the children of a specified node horizontally within the parent node.
+  * 
+  * This method adjusts the positions of the child nodes so that they are evenly
+  * distributed along the vertical center of the parent node. Each child is positioned
+  * with a fixed horizontal offset.
+  *
+  * @param id - The unique identifier of the parent node whose children will be centered.
+  */
+  public centerChildren(id: string){
+    if (this.graph) {
+      const currentNode = this.graph.getCellById(id);
+      const children = currentNode.getChildren();
+      const currentNodeBBox = currentNode.getBBox();
+      const parentCenterY = currentNodeBBox.y + currentNodeBBox.height / 2; 
+      if (children) {
+        let currentX = currentNodeBBox.x + 30; 
+
+        children.forEach(child => {
+          const bbox = child.getBBox();
+
+          child.setProp({
+              position: {
+                x: currentX,
+                y: parentCenterY - bbox.height / 2 
+              }
+          });
+
+          currentX += bbox.width + 80; 
+        });
+      }
+    } 
+  }
+
+  /**
+  * Sets the absolute positions of parent nodes based on their widths.
+  * 
+  * This method positions parent nodes, which may have multiple children, 
+  * starting from a specified horizontal offset. Each parent node is placed
+  * at a calculated position based on the width of the previous parent.
+  *
+  * @param parentsId - A JSON string containing the unique identifiers of the parent nodes to be positioned.
+  */
+  public setPositionAbsoluteParent(parentsId: string){
+    if(this.graph){
+       const parsedIds = JSON.parse(parentsId); 
+      let currentX = 20;
+      for(let i = 0 ; i < parsedIds.length ; i++){
+        const nodeParent = this.graph.getCellById(parsedIds[i]);
+        if(nodeParent){
+          nodeParent.setProp({position : { x: currentX }});
+          currentX = currentX + nodeParent.getBBox().width + 180;
+        }
+      }
     }
   }
 
@@ -1459,7 +1694,7 @@ export class X6 extends LitElement {
   * Sets up an event listener for double-click events on the background node.
   * 
   * When the background node is double-clicked, it triggers the creation of a 
-  * resizing widget for that background no using the transform plugin.
+  * resizing widget for that background node using the transform plugin.
   */
   public eventResizeNodeBackgroundDblClick(){
     if(this.graph){
@@ -1703,7 +1938,10 @@ export class X6 extends LitElement {
   protected render(): unknown {
     return html`
       <div id="canvas" style="height: 100%; width: 100%;"></div>
-      `;
+      ${this.kuwaiba_graph === 4 ? html`
+        <div id="minimap"></div>
+      ` : ''}
+    `;
   }
 
 }
