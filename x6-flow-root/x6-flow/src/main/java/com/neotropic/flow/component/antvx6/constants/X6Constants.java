@@ -46,6 +46,11 @@ public class X6Constants {
     public static final int KUWAIBA_PHYSICAL_PATH_VIEW = 4;
     
     /**
+    * The kuwaiba constant for physical tree view.
+    */
+    public static final int KUWAIBA_PHYSICAL_TREE_VIEW = 5;
+    
+    /**
     * The width of the graph in pixels.
     */
    public static final int GRAPH_WIDTH = 600;
@@ -76,14 +81,24 @@ public class X6Constants {
    public static final int GRAPH_HEIGHT_SPLICE_BOX = 700;
    
    /**
-    * The width of the graph in pixels for splice box view.
+    * The width of the graph in pixels for physical path view.
     */
    public static final int GRAPH_WIDTH_PHYSICAL_PATH = 1500;
 
    /**
-    * The height of the graph in pixels for splice box view.
+    * The height of the graph in pixels for physical path view.
     */
    public static final int GRAPH_HEIGHT_PHYSICAL_PATH = 500;
+   
+   /**
+    * The width of the graph in pixels for physical tree view.
+    */
+   public static final int GRAPH_WIDTH_PHYSICAL_TREE = 1500;
+
+   /**
+    * The height of the graph in pixels for physical tree view.
+    */
+   public static final int GRAPH_HEIGHT_PHYSICAL_TREE = 500;
 
    /**
     * The background color of the graph.
@@ -139,4 +154,8 @@ public class X6Constants {
     * Represents the default (center) position of the label on the node.
     */
    public static final String LABEL_NODE_POSITION_DEFAULT = "default";
+   
+   public static final String LABEL_NODE_HIDDEN = "hidden";
+   
+   public static final String LABEL_NODE_VISIBLE = "visibe";
 }

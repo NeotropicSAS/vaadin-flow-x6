@@ -68,5 +68,5 @@ public class X6Cell {
     public void setBorderRadius(int borderRadius) {
         this.borderRadius = borderRadius;
     }
-    
+
 }

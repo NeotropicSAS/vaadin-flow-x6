@@ -340,7 +340,8 @@ public class AntvX6 extends Div {
             "parentId: $13, " +
             "labelText: $14, " +
             "labelPosition: $15, " +
-            "port: $16 " +  
+            "labelVisibility: $16, " +
+            "port: $17 " +  
             "})",
             node.getId(),
             node.getGeometry().getCoordinates().getX(),
@@ -358,6 +359,7 @@ public class AntvX6 extends Div {
             node.getParentId(),
             node.getLabelText(),
             node.getLabelPosition(),
+            node.getLabelVisibility(),
             node.isPort()
         );
         this.nodes.add(node);
@@ -413,21 +415,48 @@ public class AntvX6 extends Div {
         this.textNodes.add(nodeText);
     }
 
-     /**
-    * Adjusts the dimensions of a node based on its children.
-    * @param id - The unique identifier of the node whose dimensions are to be adjusted.
+    
+    /**
+    * Adjusts the width of a node based on its children.
+    * This method calculates the necessary width for the specified node by considering
+    * the reserved space, spacing between child nodes, and any additional height required.
+    *
+    * @param id - The unique identifier of the node whose width is to be adjusted.
+    * @param reserveSpace - The amount of space to reserve for the initial and final child.
+    * @param childSpacing - The spacing to apply between each child node.
+    * @param heightIncrease - The additional height to add to the node's dimensions.
     */
-    public void adjustNodeDimensions(String nodeId){
-        this.getElement().callJsFunction("adjustNodeDimensions", nodeId);
+    public void adjustNodeWidth(String id, int reserveSpace, int childSpacing, int heightIncrease){
+        this.getElement().callJsFunction("adjustNodeWidth", id, reserveSpace, childSpacing, heightIncrease);
+    }
+    
+    public void executeTree(String containerId, int spacing){
+        this.getElement().callJsFunction("executeTree", containerId, spacing);
+    }
+    
+    public void orderChildrenByName(String idContainer){
+        this.getElement().callJsFunction("orderChildrenByName", idContainer);
+    }
+    
+    public void adjustNodeHeight(String id, int childSpacing){
+        this.getElement().callJsFunction("adjustNodeHeight", id, childSpacing);
     }
     
     /**
-  * Centers the children of a specified node horizontally within the parent node.
-  *
-  * @param id - The unique identifier of the parent node whose children will be centered.
-  */
-    public void centerChildren(String nodeId){
-        this.getElement().callJsFunction("centerChildren", nodeId);
+    * Centers the children of a specified parent node horizontally within that parent node.
+    * This method calculates the starting position and applies the specified spacing 
+    * between child nodes to ensure they are evenly centered.
+    *
+    * @param id - The unique identifier of the parent node whose children will be centered.
+    * @param startX - The starting X position from which to center the child nodes.
+    * @param childSpacing - The spacing to apply between each child node.
+    */
+    public void centerChildrenHorizontally(String id, int startX, int childSpacing){
+        this.getElement().callJsFunction("centerChildrenHorizontally", id, startX, childSpacing);
+    }
+    
+    public void centerChildrenVertically(String id, int childSpacing){
+        this.getElement().callJsFunction("centerChildrenVertically", id, childSpacing);
     }
     
     /**
@@ -441,6 +470,10 @@ public class AntvX6 extends Div {
     */
     public void setParent(String idParent, String idChild){
         this.getElement().callJsFunction("setParent", idParent, idChild);
+    }
+    
+    public void establishHierarchyThroughEdges(){
+        this.getElement().callJsFunction("establishHierarchyThroughEdges");
     }
     
     /**

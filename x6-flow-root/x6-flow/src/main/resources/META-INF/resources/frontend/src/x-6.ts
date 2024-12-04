@@ -71,6 +71,7 @@ interface X6AbstractNode extends X6Cell{
   parentId: string;
   labelText: string;
   labelPosition: string;
+  labelVisibility: string;
 }
 
 /**
@@ -598,6 +599,7 @@ export class X6 extends LitElement {
   * 2 : FiberSplitterView
   * 3 : SpliceBoxView
   * 4 : PhysicalPathView
+  * 5 : PhysicalTreeView
   */
   @property()
   kuwaiba_graph = 0;
@@ -742,6 +744,9 @@ export class X6 extends LitElement {
         break;
         case 4:
           this.initPhysicalPathView();
+        break;
+        case 5:
+          this.initPhysicalTree();
         break;
         default:
           this.initGraph();
@@ -928,6 +933,39 @@ export class X6 extends LitElement {
   * Initializes the graph for the Kuwaiba PhysicalPathView.
   */
   private initPhysicalPathView(){
+    this.initGraphWithInteractions();
+    if(this.graph){
+      this.scrollerPlugin = new Scroller({
+        enabled:true,
+        pannable: true,
+        pageVisible: true,
+        pageBreak: true,
+        width:this.graph_width,
+        height: this.graph_height,
+        pageWidth: this.graph_width,
+        pageHeight: this.graph_height,
+        padding: 0,
+        autoResize : true , 
+      });
+
+      this.graph.use(this.scrollerPlugin);
+      this.graph.setScrollbarPosition(600,600);
+
+      this.graph.use(new Export());
+
+      if(this.minimap){
+        const minimap = new MiniMap({
+          container: this.minimap,
+          width: 200, 
+          height: 160, 
+        });
+  
+        this.graph.use(minimap);
+      }
+    }
+  }
+
+  private initPhysicalTree(){
     this.initGraphWithInteractions();
     if(this.graph){
       this.scrollerPlugin = new Scroller({
@@ -1215,6 +1253,8 @@ export class X6 extends LitElement {
         refY2: 4,
         textAnchor: 'middle',
         textVerticalAnchor: 'top',
+        visibility: node.labelVisibility
+        
       };
     } else {
       labelPosition = {
@@ -1224,6 +1264,7 @@ export class X6 extends LitElement {
         refY: 0.5,
         textAnchor: 'middle',
         textVerticalAnchor: 'middle',
+        visibility: node.labelVisibility
       };
     }
     
@@ -1264,7 +1305,7 @@ export class X6 extends LitElement {
         ports: {
           ...port
         },
-        zIndex: node.zIndex
+        zIndex: node.zIndex,
       })
 
       this.setParent(node.parentId, node.id);
@@ -1359,42 +1400,281 @@ export class X6 extends LitElement {
     }
   }
 
+  public establishHierarchyThroughEdges() {
+    if (this.graph) {
+        const edges = this.graph.getEdges();
+        
+        edges.forEach(edge => {
+          const source = edge.getSourceNode(); 
+          const target = edge.getTargetNode(); 
+
+          if(source && target){
+            const parentSource = source.getParent();
+            const parentTarget = target.getParent();
+            
+            if(parentSource && parentTarget)
+              parentSource.addChild(parentTarget);
+          } 
+        });
+    }
+  }
+
   /**
-  * Adjusts the dimensions of a node based on its children.
+  * Adjusts the dimensions of a node based on its children,
+  * assuming the children will be arranged horizontally.
   * 
   * This method calculates the total width required for the node based on the
-  * widths of its child nodes and adjusts the node's size accordingly. 
+  * widths of its child nodes and adjusts the node's size accordingly.
   *
   * @param id - The unique identifier of the node whose dimensions are to be adjusted.
   */
-  public adjustNodeDimensions(id: string){
+  public adjustNodeWidth(id: string, reserveSpace: number, childSpacing: number, heightIncrease: number){
     if (this.graph) {
       const currentNode = this.graph.getCellById(id);
-      const children = currentNode.getChildren();
-      let omega = 60;
-      let maxChildHeight = 0;
+      if(currentNode){
+        const children = currentNode.getChildren();
+        let omega = reserveSpace;
+        let maxChildHeight = 0;
 
-      if(children && children.length > 0){
-        const childrenSize = children.length;
-        let totalWidth = 0;
+        if(children && children.length > 0){
+          const childrenSize = children.length;
+          let totalWidth = 0;
 
-        if(childrenSize != 1)
-          omega = 80*(children.length -1) + 60;
+          if(childrenSize != 1)
+            omega = childSpacing*(children.length -1) + reserveSpace;
+          
+          children.forEach(child => {
+            if(child.getBBox().height > maxChildHeight)
+              maxChildHeight = child.getBBox().height;
+            totalWidth += child.getBBox().width;
+          });
 
-        children.forEach(child => {
-          if(child.getBBox().height > maxChildHeight)
-            maxChildHeight = child.getBBox().height;
-          totalWidth += child.getBBox().width;
-        });
-
-        currentNode.prop({
-          size: {
-            width: totalWidth + omega,
-            height: maxChildHeight + 50
-          }
-        });
+          currentNode.prop({
+            size: {
+              width: totalWidth + omega,
+              height: maxChildHeight + heightIncrease
+            }
+          });
+        }
       }
     }
+  }
+
+  public adjustNodeHeight(id: string, childSpacing: number){
+    if(this.graph){
+      const currentNode = this.graph.getCellById(id);
+      if(currentNode){
+        const children = currentNode.getChildren();
+
+        if(children && children.length > 0){
+          const childrenSize = children.length;
+          const omega = childSpacing*(childrenSize + 1); 
+          let totalHeight = 0;
+          let maxChildWidth = 0;
+
+          children.forEach( child => {
+            if(child.getBBox().width > maxChildWidth)
+              maxChildWidth = child.getBBox().width;
+            totalHeight += child.getBBox().height;
+          });
+
+          currentNode.prop({
+            size: {
+              width: maxChildWidth*3,
+              height: totalHeight + omega
+            }
+          });
+        }
+      }
+    }
+  }
+
+  public orderChildrenByName(idContainer: string) {
+    if(this.graph){
+      const container = this.graph.getCellById(idContainer);
+      const children = container.getChildren();
+      const orderedChildren = [];
+
+      if(children){
+        for (let i = 0; i < children.length; i++) {
+          const child = children[i];
+          const label: string = child.getAttrByPath('label/text') || '';
+          let inserted = false;
+          for (let j = 0; j < orderedChildren.length; j++) {
+            let currentLabel: string = orderedChildren[j].getAttrByPath('label/text') as string || '';
+            if (label < currentLabel) {
+              orderedChildren.splice(j, 0, child);
+              inserted = true;
+              break;
+            }
+          }
+          if (!inserted) 
+            orderedChildren.push(child); 
+        }
+        container.setChildren(orderedChildren);
+      }
+    }
+  }
+
+  
+  public executeTree(containerId: string, spacing: number) {
+    if (this.graph) {
+      const container = this.graph.getCellById(containerId);
+      if (container){
+        const children = container.getChildren();
+        const edges = this.graph.getEdges();
+        let targets: (string | undefined)[] = [];
+        
+        if (children && edges && edges.length > 0) {
+          children.forEach(child => {
+            const source = child.id;
+            edges.forEach(edge => {
+              const targetNode = edge.getTargetNode();
+              if (targetNode && targetNode.id) {
+                if (edge.getSourceNode()?.id === source) {
+                  targets.push(targetNode.id);
+                }
+              }
+            });
+          });
+          
+          let currentY = container.getBBox().y;
+
+          if(targets && targets.length > 0){
+            let lastParentId = ' ';
+            targets.forEach(target => {
+              if (target) {
+                const currentNode = this.graph?.getCellById(target);
+                if (currentNode) {
+                  const parent = currentNode.getParent();
+                  if (parent) {
+                    if(lastParentId !== parent.id){  
+                      parent.setProp({
+                        position: {
+                          x: container.getBBox().x + container.getBBox().width + spacing,
+                          y: currentY
+                        }
+                      });
+
+                      currentY +=  parent.getBBox().height + this.getNeededSpace(parent.id);
+                      console.log('neede space ' + (currentY - parent.getBBox().height));
+                      this.setTreePosition(parent.id , parent.getBBox().x, spacing);
+                    }
+
+                    lastParentId = parent.id;
+                  } 
+                }
+              }
+            });
+          }
+        }
+      }
+    }
+  }
+
+  public setTreePosition(containerId: string, initialX: number, spacing: number, visited: Set<string> = new Set(),depth = 0) {
+    let lastY = 0;
+    if (this.graph) {
+      const container = this.graph.getCellById(containerId);
+      if (!container) return 0;
+
+      lastY = container.getBBox().y + container.getBBox().height;
+
+      const children = container.getChildren();
+      const edges = this.graph.getEdges();
+      let targets: (string | undefined)[] = [];
+      
+      if (children && edges && edges.length > 0) {
+        children.forEach(child => {
+          if(!visited.has(child.id)){
+            const source = child.id;
+            visited.add(source);
+            edges.forEach(edge => {
+            const targetNode = edge.getTargetNode();
+            if (targetNode && targetNode.id) {
+              if (edge.getSourceNode()?.id === source) 
+                targets.push(targetNode.id);
+            }
+          });
+          }
+        });
+
+        initialX = container.getBBox().x + container.getBBox().width + spacing;
+        let currentY = container.getBBox().y;
+
+        if(targets && targets.length > 0){
+          targets.forEach(target => {
+            if (target) {
+              const currentNode = this.graph?.getCellById(target);
+              if (currentNode) {
+                const parent = currentNode.getParent();
+                if (parent) {
+                  parent.setProp({
+                    position: {
+                      x: initialX,
+                      y: currentY
+                    }
+                  })
+                  const childLastY = this.setTreePosition(parent.id, parent.getBBox().x, spacing, visited ,depth + 1);
+                  currentY = childLastY;
+                } 
+              }
+            }
+          });
+        }
+      }
+    }
+    return lastY;
+  }
+
+  public getNeededSpace(containerId: string, visited: Set<string> = new Set()) {
+    let maxHeight = 0; 
+    let currentMaxHeight = 0;
+    if (this.graph) {
+      const container = this.graph.getCellById(containerId);
+      if (!container) return 0;
+
+      maxHeight = container.getBBox().height;
+      
+      const children = container.getChildren();
+      const edges = this.graph.getEdges();
+      let targets: (string | undefined)[] = [];
+      
+      if (children && edges && edges.length > 0) {
+        children.forEach(child => {
+          if(!visited.has(child.id)){
+            const source = child.id;
+            visited.add(source);
+            edges.forEach(edge => {
+              const targetNode = edge.getTargetNode();
+              if (targetNode && targetNode.id) {
+                if (edge.getSourceNode()?.id === source)
+                  targets.push(targetNode.id);
+              }
+            });
+          }
+        });
+
+        if(targets && targets.length > 0){
+            console.log('numero de saltos ' + targets.length)
+          targets.forEach(target => {
+            if (target) {
+              const currentNode = this.graph?.getCellById(target);
+              if (currentNode) {
+                const parent = currentNode.getParent();
+                if (parent) {
+                  currentMaxHeight += this.getNeededSpace(parent.id, visited);
+                  if(currentMaxHeight > maxHeight)
+                    maxHeight = currentMaxHeight;
+                } 
+              }
+            }
+          });
+        }
+      }
+    }
+
+    return maxHeight;
   }
 
   /**
@@ -1406,27 +1686,57 @@ export class X6 extends LitElement {
   *
   * @param id - The unique identifier of the parent node whose children will be centered.
   */
-  public centerChildren(id: string){
+  public centerChildrenHorizontally(id: string, startX: number, childSpacing: number){
     if (this.graph) {
       const currentNode = this.graph.getCellById(id);
-      const children = currentNode.getChildren();
-      const currentNodeBBox = currentNode.getBBox();
-      const parentCenterY = currentNodeBBox.y + currentNodeBBox.height / 2; 
-      if (children) {
-        let currentX = currentNodeBBox.x + 30; 
-
-        children.forEach(child => {
-          const bbox = child.getBBox();
-
-          child.setProp({
-              position: {
-                x: currentX,
-                y: parentCenterY - bbox.height / 2 
-              }
+      if(currentNode){
+        const children = currentNode.getChildren();
+        const currentNodeBBox = currentNode.getBBox();
+        const parentCenterY = currentNodeBBox.y + currentNodeBBox.height / 2; 
+        if (children) {
+          let currentX = currentNodeBBox.x + startX; 
+  
+          children.forEach(child => {
+            const bbox = child.getBBox();
+        
+            child.setProp({
+                position: {
+                  x: currentX,
+                  y: parentCenterY - bbox.height / 2 
+                }
+            });
+  
+            currentX += bbox.width + childSpacing; 
           });
+        }
+      }
+    } 
+  }
 
-          currentX += bbox.width + 80; 
-        });
+  public centerChildrenVertically(id: string, childSpacing: number){
+    if (this.graph) {
+      const currentNode = this.graph.getCellById(id);
+      if(currentNode){
+        const children = currentNode.getChildren();
+        const currentNodeBBox = currentNode.getBBox();
+        const parentCenterX = currentNodeBBox.x + currentNodeBBox.width / 2; 
+
+        if (children) {
+          let currentY = currentNodeBBox.y + childSpacing; 
+
+          children.forEach(child => {
+            const bbox = child.getBBox();
+        
+            child.setProp({
+                position: {
+                  x: parentCenterX - bbox.width / 2,
+                  y: currentY 
+                }
+            });
+
+            currentY += bbox.height + childSpacing; 
+          });
+        }
       }
     } 
   }
@@ -1938,7 +2248,7 @@ export class X6 extends LitElement {
   protected render(): unknown {
     return html`
       <div id="canvas" style="height: 100%; width: 100%;"></div>
-      ${this.kuwaiba_graph === 4 ? html`
+      ${this.kuwaiba_graph === 4 || this.kuwaiba_graph === 5 ? html`
         <div id="minimap"></div>
       ` : ''}
     `;

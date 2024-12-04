@@ -38,6 +38,16 @@ public class X6Node extends X6AbstractNode{
     public void setPort(boolean port) {
         this.port = port;
     }
+
+    @Override
+    public void setLabelVisibility(String labelVisibility) {
+        super.setLabelVisibility(labelVisibility); 
+    }
+
+    @Override
+    public String getLabelVisibility() {
+        return super.getLabelVisibility(); 
+    }
     
     @Override
     public int getBorderRadius() {

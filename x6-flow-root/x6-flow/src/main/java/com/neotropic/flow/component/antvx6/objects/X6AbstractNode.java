@@ -27,11 +27,12 @@ public abstract class X6AbstractNode extends X6Cell {
     private String fillColor;
     private String strokeColor;
     private double strokeWidth;
-    private String labelText;
-    private String labelPosition;
-    private boolean movable;
+    private boolean movable; 
     private int zIndex;
     private String parentId;
+    private String labelText;
+    private String labelPosition;
+    private String labelVisibility;
     
     public X6AbstractNode(){
         super();
@@ -43,11 +44,12 @@ public abstract class X6AbstractNode extends X6Cell {
         this.fillColor = "white";
         this.strokeColor = "black";
         this.strokeWidth = 1;
-        this.labelText = "";
-        this.labelPosition = X6Constants.LABEL_NODE_POSITION_DEFAULT;
         this.movable = true;
         this.zIndex = 0;
         this.parentId = "";
+        this.labelText = "";
+        this.labelPosition = X6Constants.LABEL_NODE_POSITION_DEFAULT;
+        this.labelVisibility = X6Constants.LABEL_NODE_VISIBLE;
     }
 
     public String getImgUrl() {
@@ -122,6 +124,14 @@ public abstract class X6AbstractNode extends X6Cell {
         this.parentId = parentId;
     }
 
+    public String getLabelVisibility() {
+        return labelVisibility;
+    }
+
+    public void setLabelVisibility(String labelVisibility) {
+        this.labelVisibility = labelVisibility;
+    }
+    
     @Override
     public void setBorderRadius(int borderRadius) {
         super.setBorderRadius(borderRadius);

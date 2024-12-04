@@ -36,34 +36,35 @@ public class MainView extends VerticalLayout {
    
     public MainView() {
         
-        /* Create the canvas */
-        AntvX6 x6Canvas = new AntvX6();
-                
-        /* set the dimensions of the canvas (600x600 px). */ 
-        x6Canvas.setGrapthWidth(X6Constants.GRAPH_WIDTH);
-        x6Canvas.setGraptHeight(X6Constants.GRAPH_HEIGHT);
-        x6Canvas.setGrid(true);
-        
-        /* Add the canvas to the view */
-        add(x6Canvas);
+       /* Create the canvas */
+       AntvX6 x6Canvas = new AntvX6();
+               
+       /* set the dimensions of the canvas (600x600 px). */ 
+       x6Canvas.setGrapthWidth(X6Constants.GRAPH_WIDTH);
+       x6Canvas.setGraptHeight(X6Constants.GRAPH_HEIGHT);
+       x6Canvas.setGrid(true);
+       
+       /* Add the canvas to the view */
+       add(x6Canvas);
 
-        
-        /*Create a node object from x6 and set its properties */
-        X6Node router = new X6Node();
-        router.setId("router-01");
-        router.setGeometry(new Geometry(100 ,100 ,32 ,32));
-        router.setShape(X6Constants.SHAPE_IMAGE);
-        router.setImgUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZj-3Gf3IOMX44LXAIpUVhghfvXsCEId-EYmMtnvoKLnsMLUQxmuj4EH8aUfYiJoMn9o&usqp=CAU");
-        router.setMovable(true);
-        router.setPort(true);
-        router.setzIndex(1);
-        router.setLabelText("router");
-        router.setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
-        
-        x6Canvas.addGraphCreatedListener(evt -> {
-            /* When the graph has been created, we draw the node. */
-            x6Canvas.drawNode(router);
-        });
+       
+       /*Create a node object from x6 and set its properties */
+       X6Node router = new X6Node();
+       router.setId("router-01");
+       router.setGeometry(new Geometry(100 ,100 ,32 ,32));
+       router.setShape(X6Constants.SHAPE_IMAGE);
+       router.setImgUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZj-3Gf3IOMX44LXAIpUVhghfvXsCEId-EYmMtnvoKLnsMLUQxmuj4EH8aUfYiJoMn9o&usqp=CAU");
+       router.setMovable(true);
+       router.setPort(true);
+       router.setzIndex(1);
+       router.setLabelText("router");
+       router.setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
+       
+       x6Canvas.addGraphCreatedListener(evt -> {
+           /* When the graph has been created, we draw the node. */
+           x6Canvas.drawNode(router);
+       });
+       
     }        
 
 }

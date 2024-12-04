@@ -2,6 +2,7 @@
   "dependencies": {
     "@antv/x6": "2.18.1",
     "@antv/x6-plugin-export": "2.1.6",
+    "@antv/x6-plugin-minimap": "2.0.7",
     "@antv/x6-plugin-scroller": "2.0.10",
     "@antv/x6-plugin-selection": "2.2.2",
     "@antv/x6-plugin-snapline": "2.1.7",
@@ -103,6 +104,7 @@
     "dependencies": {
       "@antv/x6": "2.18.1",
       "@antv/x6-plugin-export": "2.1.6",
+      "@antv/x6-plugin-minimap": "2.0.7",
       "@antv/x6-plugin-scroller": "2.0.10",
       "@antv/x6-plugin-selection": "2.2.2",
       "@antv/x6-plugin-snapline": "2.1.7",
@@ -196,6 +198,6 @@
       "webpack-dev-server": "3.11.0",
       "webpack-merge": "4.2.2"
     },
-    "hash": "a2b171d90b00696323d74ef8dbde883cf9da8446ff6d305dc86cca39a9be0d8e"
+    "hash": "03ed95dbb068a29f825505773b83ad0832feac0c24f09a1187ad31d432d1f228"
   }
 }
