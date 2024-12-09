@@ -15,6 +15,9 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
+import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
+import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
+
 
 /**
  * Represents a text node in the X6 graph.
@@ -30,6 +33,26 @@ public class X6NodeText extends X6AbstractNode{
     
     public X6NodeText(String id, double x, double y, double width, double height, String shape) {
         super(id, x, y, width, height, shape);
+    }
+
+    @Override
+    public void setNodeStyles(X6NodeStyles nodeStyles) {
+        super.setNodeStyles(nodeStyles);
+    }
+
+    @Override
+    public X6NodeStyles getNodeStyles() {
+        return super.getNodeStyles();
+    }
+
+    @Override
+    public void setLabelStyles(X6LabelStyles labelStyles) {
+        super.setLabelStyles(labelStyles);
+    }
+
+    @Override
+    public X6LabelStyles getLabelStyles() {
+        return super.getLabelStyles();
     }
     
     public String getLabelPositionRelative(){
@@ -81,16 +104,6 @@ public class X6NodeText extends X6AbstractNode{
     }
 
     @Override
-    public void setzIndex(int zIndex) {
-        super.setzIndex(zIndex); 
-    }
-
-    @Override
-    public int getzIndex() {
-        return super.getzIndex(); 
-    }
-
-    @Override
     public void setMovable(boolean movable) {
         super.setMovable(movable); 
     }
@@ -100,15 +113,6 @@ public class X6NodeText extends X6AbstractNode{
         return super.isMovable(); 
     }
 
-    @Override
-    public void setLabelPosition(String labelPosition) {
-        super.setLabelPosition(labelPosition); 
-    }
-
-    @Override
-    public String getLabelPosition() {
-        return super.getLabelPosition(); 
-    }
 
     @Override
     public void setLabelText(String labelText) {
@@ -121,36 +125,6 @@ public class X6NodeText extends X6AbstractNode{
     }
 
     @Override
-    public void setStrokeWidth(double strokeWidth) {
-        super.setStrokeWidth(strokeWidth); 
-    }
-
-    @Override
-    public double getStrokeWidth() {
-        return super.getStrokeWidth(); 
-    }
-
-    @Override
-    public void setStrokeColor(String strokeColor) {
-        super.setStrokeColor(strokeColor); 
-    }
-
-    @Override
-    public String getStrokeColor() {
-        return super.getStrokeColor(); 
-    }
-
-    @Override
-    public void setFillColor(String fillColor) {
-        super.setFillColor(fillColor); 
-    }
-
-    @Override
-    public String getFillColor() {
-        return super.getFillColor(); 
-    }
-
-    @Override
     public void setImgUrl(String imgUrl) {
         super.setImgUrl(imgUrl); 
     }
@@ -158,16 +132,6 @@ public class X6NodeText extends X6AbstractNode{
     @Override
     public String getImgUrl() {
         return super.getImgUrl(); 
-    }
-
-    @Override
-    public int getBorderRadius() {
-        return super.getBorderRadius(); 
-    }
-
-    @Override
-    public void setBorderRadius(int borderRadius) {
-        super.setBorderRadius(borderRadius); 
     }
   
 }

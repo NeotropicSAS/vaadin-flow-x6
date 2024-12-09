@@ -47,7 +47,6 @@ public class MainView extends VerticalLayout {
        /* Add the canvas to the view */
        add(x6Canvas);
 
-       
        /*Create a node object from x6 and set its properties */
        X6Node router = new X6Node();
        router.setId("router-01");
@@ -56,9 +55,9 @@ public class MainView extends VerticalLayout {
        router.setImgUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZj-3Gf3IOMX44LXAIpUVhghfvXsCEId-EYmMtnvoKLnsMLUQxmuj4EH8aUfYiJoMn9o&usqp=CAU");
        router.setMovable(true);
        router.setPort(true);
-       router.setzIndex(1);
+       router.getNodeStyles().setzIndex(1);
        router.setLabelText("router");
-       router.setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
+       router.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
        
        x6Canvas.addGraphCreatedListener(evt -> {
            /* When the graph has been created, we draw the node. */

@@ -24,17 +24,13 @@ public class X6Cell {
     private String id;
     private Geometry geometry;
     private String shape;
-    private int borderRadius;
 
-    public X6Cell(){
-        this.borderRadius = 0;
-    }
+    public X6Cell(){}
     
     public X6Cell(String id, double x, double y, double width, double height, String shape) {
         this.id = id;
         this.geometry = new Geometry(x, y, width, height);
         this.shape = shape;
-        this.borderRadius = 0;
     }
 
     public String getId() {
@@ -60,13 +56,4 @@ public class X6Cell {
     public void setShape(String shape) {
         this.shape = shape;
     }
-
-    public int getBorderRadius() {
-        return borderRadius;
-    }
-
-    public void setBorderRadius(int borderRadius) {
-        this.borderRadius = borderRadius;
-    }
-
 }

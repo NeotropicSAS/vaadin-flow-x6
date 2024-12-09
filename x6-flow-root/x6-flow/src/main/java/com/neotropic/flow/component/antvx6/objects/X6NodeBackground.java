@@ -15,6 +15,9 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
+import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
+import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
+
 /**
  * Represents a background node in the X6 graph.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
@@ -30,23 +33,23 @@ public class X6NodeBackground extends X6AbstractNode {
     }
 
     @Override
-    public int getBorderRadius() {
-        return super.getBorderRadius(); 
+    public void setNodeStyles(X6NodeStyles nodeStyles) {
+        super.setNodeStyles(nodeStyles);
     }
 
     @Override
-    public void setBorderRadius(int borderRadius) {
-        super.setBorderRadius(borderRadius); 
+    public X6NodeStyles getNodeStyles() {
+        return super.getNodeStyles();
     }
 
     @Override
-    public void setLabelPosition(String labelPosition) {
-        super.setLabelPosition(labelPosition); 
+    public void setLabelStyles(X6LabelStyles labelStyles) {
+        super.setLabelStyles(labelStyles);
     }
 
     @Override
-    public String getLabelPosition() {
-        return super.getLabelPosition(); 
+    public X6LabelStyles getLabelStyles() {
+        return super.getLabelStyles();
     }
 
     @Override
@@ -68,17 +71,7 @@ public class X6NodeBackground extends X6AbstractNode {
     public String getParentId() {
         return super.getParentId(); 
     }
-
-    @Override
-    public void setzIndex(int zIndex) {
-        super.setzIndex(zIndex); 
-    }
-
-    @Override
-    public int getzIndex() {
-        return super.getzIndex(); 
-    }
-
+    
     @Override
     public void setMovable(boolean movable) {
         super.setMovable(movable); 
@@ -87,36 +80,6 @@ public class X6NodeBackground extends X6AbstractNode {
     @Override
     public boolean isMovable() {
         return super.isMovable(); 
-    }
-
-    @Override
-    public void setStrokeWidth(double strokeWidth) {
-        super.setStrokeWidth(strokeWidth); 
-    }
-
-    @Override
-    public double getStrokeWidth() {
-        return super.getStrokeWidth(); 
-    }
-
-    @Override
-    public void setStrokeColor(String strokeColor) {
-        super.setStrokeColor(strokeColor); 
-    }
-
-    @Override
-    public String getStrokeColor() {
-        return super.getStrokeColor(); 
-    }
-
-    @Override
-    public void setFillColor(String fillColor) {
-        super.setFillColor(fillColor); 
-    }
-
-    @Override
-    public String getFillColor() {
-        return super.getFillColor(); 
     }
 
     @Override

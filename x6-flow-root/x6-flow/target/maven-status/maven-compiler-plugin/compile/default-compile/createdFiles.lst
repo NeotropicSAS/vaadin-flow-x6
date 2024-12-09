@@ -6,7 +6,9 @@ com/neotropic/flow/component/antvx6/objects/X6NodeText.class
 com/neotropic/flow/component/antvx6/objects/Dimension.class
 com/neotropic/flow/component/antvx6/objects/X6Node.class
 com/neotropic/flow/component/antvx6/objects/X6Cell.class
+com/neotropic/flow/component/styles/X6NodeStyles.class
 com/neotropic/flow/component/antvx6/constants/X6Constants.class
+com/neotropic/flow/component/styles/X6LabelStyles.class
 com/neotropic/flow/component/antvx6/AntvX6$NodeMovedEvent.class
 com/neotropic/flow/component/antvx6/objects/X6NodeBackground.class
 com/neotropic/flow/component/antvx6/AntvX6$NodeBackgroundResizedEvent.class

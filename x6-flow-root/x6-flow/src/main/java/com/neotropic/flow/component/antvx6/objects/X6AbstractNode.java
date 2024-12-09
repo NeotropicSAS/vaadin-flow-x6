@@ -15,7 +15,8 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
-import com.neotropic.flow.component.antvx6.constants.X6Constants;
+import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
+import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
 
 /**
  * Represents a basic node in the X6 graph model.
@@ -24,32 +25,26 @@ import com.neotropic.flow.component.antvx6.constants.X6Constants;
  */
 public abstract class X6AbstractNode extends X6Cell { 
     private String imgUrl;
-    private String fillColor;
-    private String strokeColor;
-    private double strokeWidth;
     private boolean movable; 
-    private int zIndex;
     private String parentId;
     private String labelText;
-    private String labelPosition;
-    private String labelVisibility;
+    private X6LabelStyles labelStyles;
+    private X6NodeStyles nodeStyles;
     
     public X6AbstractNode(){
         super();
+        this.labelStyles = new X6LabelStyles();
+        this.nodeStyles = new X6NodeStyles();
     }
     
     public X6AbstractNode(String id, double x, double y,double width, double height, String shape){
         super(id, x, y, width, height, shape);
         this.imgUrl = "";
-        this.fillColor = "white";
-        this.strokeColor = "black";
-        this.strokeWidth = 1;
         this.movable = true;
-        this.zIndex = 0;
         this.parentId = "";
         this.labelText = "";
-        this.labelPosition = X6Constants.LABEL_NODE_POSITION_DEFAULT;
-        this.labelVisibility = X6Constants.LABEL_NODE_VISIBLE;
+        this.labelStyles = new X6LabelStyles();
+        this.nodeStyles = new X6NodeStyles();
     }
 
     public String getImgUrl() {
@@ -60,44 +55,12 @@ public abstract class X6AbstractNode extends X6Cell {
         this.imgUrl = imgUrl;
     }
 
-    public String getFillColor() {
-        return fillColor;
-    }
-
-    public void setFillColor(String fillColor) {
-        this.fillColor = fillColor;
-    }
-
-    public String getStrokeColor() {
-        return strokeColor;
-    }
-
-    public void setStrokeColor(String strokeColor) {
-        this.strokeColor = strokeColor;
-    }
-
-    public double getStrokeWidth() {
-        return strokeWidth;
-    }
-
-    public void setStrokeWidth(double strokeWidth) {
-        this.strokeWidth = strokeWidth;
-    }
-
     public String getLabelText() {
         return labelText;
     }
 
     public void setLabelText(String labelText) {
         this.labelText = labelText;
-    }
-
-    public String getLabelPosition() {
-        return labelPosition;
-    }
-
-    public void setLabelPosition(String labelPosition) {
-        this.labelPosition = labelPosition;
     }
 
     public boolean isMovable() {
@@ -108,14 +71,6 @@ public abstract class X6AbstractNode extends X6Cell {
         this.movable = movable;
     }
 
-    public int getzIndex() {
-        return zIndex;
-    }
-
-    public void setzIndex(int zIndex) {
-        this.zIndex = zIndex;
-    }
-
     public String getParentId() {
         return parentId;
     }
@@ -124,22 +79,20 @@ public abstract class X6AbstractNode extends X6Cell {
         this.parentId = parentId;
     }
 
-    public String getLabelVisibility() {
-        return labelVisibility;
+    public X6LabelStyles getLabelStyles() {
+        return labelStyles;
     }
 
-    public void setLabelVisibility(String labelVisibility) {
-        this.labelVisibility = labelVisibility;
-    }
-    
-    @Override
-    public void setBorderRadius(int borderRadius) {
-        super.setBorderRadius(borderRadius);
+    public void setLabelStyles(X6LabelStyles labelStyles) {
+        this.labelStyles = labelStyles;
     }
 
-    @Override
-    public int getBorderRadius() {
-        return super.getBorderRadius(); 
+    public X6NodeStyles getNodeStyles() {
+        return nodeStyles;
+    }
+
+    public void setNodeStyles(X6NodeStyles nodeStyles) {
+        this.nodeStyles = nodeStyles;
     }
     
     @Override

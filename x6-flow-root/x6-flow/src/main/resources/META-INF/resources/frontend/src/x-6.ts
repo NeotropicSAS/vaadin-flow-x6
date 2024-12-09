@@ -48,14 +48,30 @@ interface Geometry {
   dimensions: Dimension;
 }
 
+interface X6LabelStyles {
+  labelTextColor: string;
+  labelFontSize: number;
+  labelFontFamily: string;
+  labelPosition: string;
+  labelVisibility: string;
+}
+
+interface X6NodeStyles{
+  borderRadius: number;
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
+  dash: string;
+  zIndex : number;
+}
+
 /**
 * Represents a cell in the graph.
 */
 interface X6Cell{
   id: string;
-  shape: string;
   geometry: Geometry;
-  borderRadius: number;
+  shape: string;
 }
 
 /**
@@ -63,15 +79,11 @@ interface X6Cell{
 */
 interface X6AbstractNode extends X6Cell{
   imgUrl: string;
-  fillColor: string;
-  strokeColor: string,
-  strokeWidth: number,
   movable: boolean;
-  zIndex : number;
   parentId: string;
   labelText: string;
-  labelPosition: string;
-  labelVisibility: string;
+  labelStyles : X6LabelStyles;
+  nodeStyles : X6NodeStyles;
 }
 
 /**
@@ -600,6 +612,7 @@ export class X6 extends LitElement {
   * 3 : SpliceBoxView
   * 4 : PhysicalPathView
   * 5 : PhysicalTreeView
+  * 6 : TopologyDesigner
   */
   @property()
   kuwaiba_graph = 0;
@@ -717,7 +730,7 @@ export class X6 extends LitElement {
   * @private
   */
   private scrollerPlugin: Scroller | null = null;
-  
+
   /*
   * The main canvas element for rendering the graph. 
   */
@@ -747,6 +760,9 @@ export class X6 extends LitElement {
         break;
         case 5:
           this.initPhysicalTree();
+        break;
+        case 6:
+          this.initTopologyDesigner();
         break;
         default:
           this.initGraph();
@@ -998,6 +1014,27 @@ export class X6 extends LitElement {
     }
   }
 
+  private initTopologyDesigner(){
+    this.initGraph();
+    if(this.graph){
+      this.scrollerPlugin = new Scroller({
+        enabled:true,
+        pannable: true,
+        pageVisible: true,
+        pageBreak: true,
+        width:this.graph_width,
+        height: this.graph_height,
+        pageWidth: this.graph_width,
+        pageHeight: this.graph_height,
+        padding: 0,
+        autoResize : true , 
+      });
+
+      this.graph.use(this.scrollerPlugin);
+      this.graph.setScrollbarPosition(600,600);
+    }
+  }
+
   /**
   * Dispatches a custom event indicating that the graph has been created.
   *
@@ -1209,7 +1246,7 @@ export class X6 extends LitElement {
         height: X6NodeBackground.geometry.dimensions.height,
         imageUrl:
         X6NodeBackground.imgUrl,
-        zIndex:X6NodeBackground.zIndex
+        zIndex:X6NodeBackground.nodeStyles.zIndex
       });
     }
   }
@@ -1244,27 +1281,31 @@ export class X6 extends LitElement {
   private createLabelPosition(node: X6Node) {
     let labelPosition;
     
-    if (node.labelPosition === 'bottom') {
+    if (node.labelStyles.labelPosition === 'bottom') {
       labelPosition = {
         text: node.labelText,
-        fontSize: 12,
+        fontSize: node.labelStyles.labelFontSize,
+        fontFamily: node.labelStyles.labelFontFamily,
+        fill: node.labelStyles.labelTextColor,
         refX: 0.5,
         refY: '100%',
         refY2: 4,
         textAnchor: 'middle',
         textVerticalAnchor: 'top',
-        visibility: node.labelVisibility
+        visibility: node.labelStyles.labelVisibility
         
       };
     } else {
       labelPosition = {
         text: node.labelText,
-        fontSize: 10,
+        fontSize: node.labelStyles.labelFontSize,
+        fontFamily: node.labelStyles.labelFontFamily,
+        fill: node.labelStyles.labelTextColor,
         refX: 0.5,
         refY: 0.5,
         textAnchor: 'middle',
         textVerticalAnchor: 'middle',
-        visibility: node.labelVisibility
+        visibility: node.labelStyles.labelVisibility
       };
     }
     
@@ -1292,11 +1333,12 @@ export class X6 extends LitElement {
           node.imgUrl,
         attrs: {
           body: {
-            fill: node.fillColor,
-            stroke: node.strokeColor,
-            strokeWidth: node.strokeWidth,
-            rx: node.borderRadius,
-            ry: node.borderRadius
+            fill: node.nodeStyles.fillColor,
+            stroke: node.nodeStyles.strokeColor,
+            strokeWidth: node.nodeStyles.strokeWidth,
+            strokeDasharray: node.nodeStyles.dash,
+            rx: node.nodeStyles.borderRadius,
+            ry: node.nodeStyles.borderRadius
           },
           label: {
             ...labelPosition,
@@ -1305,7 +1347,7 @@ export class X6 extends LitElement {
         ports: {
           ...port
         },
-        zIndex: node.zIndex,
+        zIndex: node.nodeStyles.zIndex,
       })
 
       this.setParent(node.parentId, node.id);
@@ -1332,11 +1374,11 @@ export class X6 extends LitElement {
         data: { enableMove: nodeText.movable },
         attrs: {
           body:{
-            fill: nodeText.fillColor,
-            stroke: nodeText.strokeColor,
-            strokeWidth: nodeText.strokeWidth,
-            rx: nodeText.borderRadius,
-            ry: nodeText.borderRadius,
+            fill: nodeText.nodeStyles.fillColor,
+            stroke: nodeText.nodeStyles.strokeColor,
+            strokeWidth: nodeText.nodeStyles.strokeWidth,
+            rx: nodeText.nodeStyles.borderRadius,
+            ry: nodeText.nodeStyles.borderRadius,
           },
           label: {
             text: nodeText.labelText,
@@ -1557,7 +1599,6 @@ export class X6 extends LitElement {
                       });
 
                       currentY +=  parent.getBBox().height + this.getNeededSpace(parent.id);
-                      console.log('neede space ' + (currentY - parent.getBBox().height));
                       this.setTreePosition(parent.id , parent.getBBox().x, spacing);
                     }
 
@@ -1656,7 +1697,6 @@ export class X6 extends LitElement {
         });
 
         if(targets && targets.length > 0){
-            console.log('numero de saltos ' + targets.length)
           targets.forEach(target => {
             if (target) {
               const currentNode = this.graph?.getCellById(target);
@@ -2022,8 +2062,8 @@ export class X6 extends LitElement {
   public createGhost(){
     if(this.graph){
       const center = this.graph.addNode({
-        x: 300,
-        y: 300,
+        x: this.graph_width/2,
+        y: this.graph_height/2,
         width: 32,
         height: 32,
         shape: 'rect',

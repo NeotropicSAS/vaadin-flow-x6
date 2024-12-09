@@ -267,36 +267,50 @@ public class AntvX6 extends Div {
             "  dimensions: { width: $3, height: $4 } " +
             "}, " +
             "shape: $5, " +
-            "borderRadius: $6, " +
-            "imgUrl: $7, " +
-            "fillColor: $8, " +
-            "strokeColor: $9, " +
-            "strokeWidth: $10, " +
-            "movable: $11, " +
-            "zIndex: $12, " +
-            "parentId: $13, " +
-            "labelText: $14, " +
-            "labelPosition: $15 " +
-            "})",
+            "imgUrl: $6, " +
+            "movable: $7, " +
+            "parentId: $8, " +
+            "labelText: $9, " +
+            "labelStyles: { " +
+            "  labelTextColor: $10, " +
+            "  labelFontSize: $11, " +
+            "  labelFontFamily: $12, " +
+            "  labelPosition: $13, " +
+            "  labelVisibility: $14 " +
+            "}, " +
+            "nodeStyles: { " +
+            "  borderRadius: $15, " +
+            "  fillColor: $16, " +
+            "  strokeColor: $17, " +
+            "  strokeWidth: $18, " +
+            "  dash: $19, " +
+            "  zIndex: $20 " +
+            "}})",
             background.getId(),
             background.getGeometry().getCoordinates().getX(),
             background.getGeometry().getCoordinates().getY(),
             background.getGeometry().getDimensions().getWidth(),
             background.getGeometry().getDimensions().getHeight(),
             background.getShape(),
-            background.getBorderRadius(),
             background.getImgUrl(),
-            background.getFillColor(),
-            background.getStrokeColor(),
-            background.getStrokeWidth(),
             background.isMovable(),
-            background.getzIndex(),
             background.getParentId(),
             background.getLabelText(),
-            background.getLabelPosition()
+            background.getLabelStyles().getLabelTextColor(),
+            background.getLabelStyles().getLabelFontSize(),
+            background.getLabelStyles().getLabelFontFamily(),
+            background.getLabelStyles().getLabelPosition(),
+            background.getLabelStyles().getLabelVisibility(),
+            background.getNodeStyles().getBorderRadius(),
+            background.getNodeStyles().getFillColor(),
+            background.getNodeStyles().getStrokeColor(),
+            background.getNodeStyles().getStrokeWidth(),
+            background.getNodeStyles().getDash(),
+            background.getNodeStyles().getzIndex()
         );
         this.nodeBackground = background;
     }
+
 
     
     /**
@@ -330,18 +344,26 @@ public class AntvX6 extends Div {
             "  dimensions: { width: $3, height: $4 } " +
             "}, " +
             "shape: $5, " +
-            "borderRadius: $6, " +
-            "imgUrl: $7, " +
-            "fillColor: $8, " +
-            "strokeColor: $9, " +
-            "strokeWidth: $10, " +
-            "movable: $11, " +
-            "zIndex: $12, " +
-            "parentId: $13, " +
-            "labelText: $14, " +
-            "labelPosition: $15, " +
-            "labelVisibility: $16, " +
-            "port: $17 " +  
+            "imgUrl: $6, " +
+            "movable: $7, " +
+            "parentId: $8, " +
+            "labelText: $9, " +
+            "labelStyles: { " +
+            "  labelTextColor: $10, " +
+            "  labelFontSize: $11, " +
+            "  labelFontFamily: $12, " +
+            "  labelPosition: $13, " +
+            "  labelVisibility: $14 " +
+            "}, " +
+            "nodeStyles: { " +
+            "  borderRadius: $15, " +
+            "  fillColor: $16, " +
+            "  strokeColor: $17, " +
+            "  strokeWidth: $18, " +
+            "  dash: $19, " +
+            "  zIndex: $20 " +
+            "}, " +
+            "port: $21 " +
             "})",
             node.getId(),
             node.getGeometry().getCoordinates().getX(),
@@ -349,21 +371,26 @@ public class AntvX6 extends Div {
             node.getGeometry().getDimensions().getWidth(),
             node.getGeometry().getDimensions().getHeight(),
             node.getShape(),
-            node.getBorderRadius(),
             node.getImgUrl(),
-            node.getFillColor(),
-            node.getStrokeColor(),
-            node.getStrokeWidth(),
             node.isMovable(),
-            node.getzIndex(),
             node.getParentId(),
             node.getLabelText(),
-            node.getLabelPosition(),
-            node.getLabelVisibility(),
+            node.getLabelStyles().getLabelTextColor(),
+            node.getLabelStyles().getLabelFontSize(),
+            node.getLabelStyles().getLabelFontFamily(),
+            node.getLabelStyles().getLabelPosition(),
+            node.getLabelStyles().getLabelVisibility(),
+            node.getNodeStyles().getBorderRadius(),
+            node.getNodeStyles().getFillColor(),
+            node.getNodeStyles().getStrokeColor(),
+            node.getNodeStyles().getStrokeWidth(),
+            node.getNodeStyles().getDash(),
+            node.getNodeStyles().getzIndex(),
             node.isPort()
         );
         this.nodes.add(node);
     }
+
 
     /**
     * Draws a visual representation of a text for a node in the graph.
@@ -381,17 +408,26 @@ public class AntvX6 extends Div {
             "  dimensions: { width: $3, height: $4 } " +
             "}, " +
             "shape: $5, " +
-            "borderRadius: $6, " +
-            "imgUrl: $7, " +
-            "fillColor: $8, " +
-            "strokeColor: $9, " +
-            "strokeWidth: $10, " +
-            "movable: $11, " +
-            "zIndex: $12, " +
-            "parentId: $13, " +
-            "labelText: $14, " +
-            "labelPosition: $15, " +  
-            "labelPositionRelative: $16 " +   
+            "imgUrl: $6, " +
+            "movable: $7, " +
+            "parentId: $8, " +
+            "labelText: $9, " +
+            "labelStyles: { " +
+            "  labelTextColor: $10, " +
+            "  labelFontSize: $11, " +
+            "  labelFontFamily: $12, " +
+            "  labelPosition: $13, " +
+            "  labelVisibility: $14 " +
+            "}, " +
+            "nodeStyles: { " +
+            "  borderRadius: $15, " +
+            "  fillColor: $16, " +
+            "  strokeColor: $17, " +
+            "  strokeWidth: $18, " +
+            "  dash: $19, " +
+            "  zIndex: $20 " +
+            "}, " +
+            "labelPositionRelative: $21 " +
             "})",
             nodeText.getId(),
             nodeText.getGeometry().getCoordinates().getX(),
@@ -399,21 +435,26 @@ public class AntvX6 extends Div {
             nodeText.getGeometry().getDimensions().getWidth(),
             nodeText.getGeometry().getDimensions().getHeight(),
             nodeText.getShape(),
-            nodeText.getBorderRadius(),
             nodeText.getImgUrl(),
-            nodeText.getFillColor(),
-            nodeText.getStrokeColor(),
-            nodeText.getStrokeWidth(),
             nodeText.isMovable(),
-            nodeText.getzIndex(),
             nodeText.getParentId(),
             nodeText.getLabelText(),
-            nodeText.getLabelPosition(),
-
+            nodeText.getLabelStyles().getLabelTextColor(),
+            nodeText.getLabelStyles().getLabelFontSize(),
+            nodeText.getLabelStyles().getLabelFontFamily(),
+            nodeText.getLabelStyles().getLabelPosition(),
+            nodeText.getLabelStyles().getLabelVisibility(),
+            nodeText.getNodeStyles().getBorderRadius(),
+            nodeText.getNodeStyles().getFillColor(),
+            nodeText.getNodeStyles().getStrokeColor(),
+            nodeText.getNodeStyles().getStrokeWidth(),
+            nodeText.getNodeStyles().getDash(),
+            nodeText.getNodeStyles().getzIndex(),
             nodeText.getLabelPositionRelative()
-        );
+            );
         this.textNodes.add(nodeText);
     }
+
 
     
     /**
