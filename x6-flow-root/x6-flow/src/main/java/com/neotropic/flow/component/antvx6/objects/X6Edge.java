@@ -15,33 +15,80 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
+import com.neotropic.flow.component.antvx6.constants.X6Constants;
+import com.neotropic.flow.component.antvx6.styles.X6EdgeStyles;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * Represents a connection between two or more nodes in the X6 graph.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
-public class X6Edge {
-    private String id;
+public class X6Edge extends X6Cell{
     private String idSource;
     private String idTarget;
     private String label;
+    private X6EdgeStyles edgeStyles;
+    private List<Vertex> vertices;
     
-    public X6Edge(){}
+    public X6Edge(){
+        super();
+        super.setCellType(X6Constants.CELL_EDGE);
+        this.vertices = new ArrayList<>();
+        this.edgeStyles = new X6EdgeStyles();
+    }
 
     public X6Edge(String id, String idSource, String idTarget, String label) {
-        this.id = id;
+        super(id);
+        super.setCellType(X6Constants.CELL_EDGE);
         this.idSource = idSource;
         this.idTarget = idTarget;
         this.label = label;
+        this.vertices = new ArrayList<>();
+        this.edgeStyles = new X6EdgeStyles();
     }
 
+    @Override
     public String getId() {
-        return id;
+        return super.getId(); 
     }
 
+    @Override
     public void setId(String id) {
-        this.id = id;
+        super.setId(id); 
     }
 
+    @Override
+    public void setStyles(HashMap<String, String> styles) {
+        super.setStyles(styles); 
+    }
+
+    @Override
+    public HashMap<String, String> getStyles() {
+        return super.getStyles(); 
+    }
+
+    @Override
+    public void setCellType(String cellType) {
+        super.setCellType(cellType); 
+    }
+
+    @Override
+    public String getCellType() {
+        return super.getCellType(); 
+    }
+
+    @Override
+    public void setTools(List<String> tools) {
+        super.setTools(tools); 
+    }
+
+    @Override
+    public List<String> getTools() {
+        return super.getTools(); 
+    }
+    
     public String getIdSource() {
         return idSource;
     }
@@ -64,6 +111,26 @@ public class X6Edge {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public X6EdgeStyles getEdgeStyles() {
+        return edgeStyles;
+    }
+
+    public void setEdgeStyles(X6EdgeStyles edgeStyles) {
+        this.edgeStyles = edgeStyles;
+    }
+    
+    public List<Vertex> getVertices() {
+        return vertices;
+    }
+
+    public void setVertices(List<Vertex> vertices) {
+        this.vertices = vertices;
+    }
+    
+    public void addVertex(Vertex vertex){
+        this.vertices.add(vertex);
     }
     
 }

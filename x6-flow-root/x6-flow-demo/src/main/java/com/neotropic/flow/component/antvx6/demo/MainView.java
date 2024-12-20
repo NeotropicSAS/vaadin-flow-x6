@@ -39,9 +39,9 @@ public class MainView extends VerticalLayout {
        /* Create the canvas */
        AntvX6 x6Canvas = new AntvX6();
                
-       /* set the dimensions of the canvas (600x600 px). */ 
-       x6Canvas.setGrapthWidth(X6Constants.GRAPH_WIDTH);
-       x6Canvas.setGraptHeight(X6Constants.GRAPH_HEIGHT);
+       
+       x6Canvas.setGrapthWidth(600);
+       x6Canvas.setGraptHeight(600);
        x6Canvas.setGrid(true);
        
        /* Add the canvas to the view */

@@ -20,50 +20,19 @@ package com.neotropic.flow.component.antvx6.constants;
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>
  */
 public class X6Constants {
-    /**
-    * The kuwaiba constant for any view with no events.
-    */
-    public static final int KUWAIBA_DEFAULT_VIEW = 0;
-
-    /**
-    * The kuwaiba constant for object view.
-    */
-    public static final int KUWAIBA_OBJECT_VIEW = 1;
-
-     /**
-    * The kuwaiba constant for fiber splitter view.
-    */
-    public static final int KUWAIBA_FIBER_SPLITTER_VIEW = 2;
-
-    /**
-    * The kuwaiba constant for splice box view.
-    */
-    public static final int KUWAIBA_SPLICE_BOX_VIEW = 3;
-
-    /**
-    * The kuwaiba constant for physical path view.
-    */
-    public static final int KUWAIBA_PHYSICAL_PATH_VIEW = 4;
-
-    /**
-    * The kuwaiba constant for physical tree view.
-    */
-    public static final int KUWAIBA_PHYSICAL_TREE_VIEW = 5;
-
-    /**
-    * The kuwaiba constant for physical tree view.
-    */
-    public static final int KUWAIBA_TOPOLOGY_DESIGNER = 6;
-
+    public static final int BASIC_GRAPH_TYPE = 0;
+    
+    public static final int INTERACTIONS_GRAPH_TYPE = 1;
+    
     /**
     * The width of the graph in pixels.
     */
-    public static final int GRAPH_WIDTH = 600;
+    public static final int GRAPH_WIDTH_OBJECT_VIEW = 600;
 
     /**
      * The height of the graph in pixels.
      */
-    public static final int GRAPH_HEIGHT = 600;
+    public static final int GRAPH_HEIGHT_OBJECT_VIEW = 600;
 
     /**
      * The width of the graph in pixels for fiber splitter view.
@@ -104,6 +73,16 @@ public class X6Constants {
     * The height of the graph in pixels for physical tree view.
     */
     public static final int GRAPH_HEIGHT_PHYSICAL_TREE = 500;
+    
+     /**
+    * The width of the graph in pixels for physical tree view.
+    */
+    public static final int GRAPH_WIDTH_TOPOLOGY_VIEW = 1500;
+
+    /**
+    * The height of the graph in pixels for physical tree view.
+    */
+    public static final int GRAPH_HEIGHT_TOPOLOGY_VIEW = 800;
 
     /**
     * The background color of the graph.
@@ -159,6 +138,11 @@ public class X6Constants {
     * The string identifier for cell node types.
     */
     public static final String CELL_NODE = "node";
+    
+    /**
+    * The string identifier for cell edge types.
+    */
+    public static final String CELL_EDGE = "edge";
 
     /**
     * Represents the position of the label at the bottom of the node.
@@ -188,4 +172,6 @@ public class X6Constants {
     public static final String STYLE_FONTSIZE = "fontSize";
     public static final String STYLE_FONTCOLOR = "fontColor";
     public static final String STYLE_FONTFAMILY = "fontFamily";
+    public static final String STYLE_ZINDEX = "zIndex";
+    public static String NONE = "none";
 }

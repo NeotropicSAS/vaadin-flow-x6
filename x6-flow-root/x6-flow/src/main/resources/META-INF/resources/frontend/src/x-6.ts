@@ -16,7 +16,7 @@
  */
 
 import {LitElement, customElement, query, html, css, property } from 'lit-element';
-import { Graph } from '@antv/x6';
+import { Edge, Graph, Node } from '@antv/x6';
 import{ Snapline }from'@antv/x6-plugin-snapline';
 import { Transform } from '@antv/x6-plugin-transform';
 import { Export } from '@antv/x6-plugin-export'; 
@@ -48,6 +48,23 @@ interface Geometry {
   dimensions: Dimension;
 }
 
+/**
+ * represents the styles of an edge in the X6 model
+ */
+interface X6EdgeStyles {
+  labelTextColor: string;
+  labelFontSize: number;
+  labelFontFamily: string;
+  strokeColor: string;
+  strokeWidth: number;
+  dash: number;
+  borderRadious: number;
+  zIndex: number;
+}
+
+/**
+ * represents the label styles of a node in the X6 model
+ */
 interface X6LabelStyles {
   labelTextColor: string;
   labelFontSize: number;
@@ -56,6 +73,9 @@ interface X6LabelStyles {
   labelVisibility: string;
 }
 
+/**
+ * represents the styles of a node in the X6 model
+ */
 interface X6NodeStyles{
   borderRadius: number;
   fillColor: string;
@@ -71,13 +91,14 @@ interface X6NodeStyles{
 interface X6Cell{
   id: string;
   geometry: Geometry;
-  shape: string;
+  tools : string[];
 }
 
 /**
 * Represents a node in the graph, extending the base cell properties.
 */
 interface X6AbstractNode extends X6Cell{
+  shape: string;
   imgUrl: string;
   movable: boolean;
   parentId: string;
@@ -109,13 +130,22 @@ interface X6NodeText extends X6AbstractNode{
 }
 
 /**
+ * represents a vertex within an edge in the x6 model
+ */
+interface Vertex {
+  x: number;
+  y: number;
+}
+
+/**
 * Represents an edge connecting two nodes in a graph.
 */
-interface X6Edge{
-  id: string;
+interface X6Edge extends X6Cell{
   idSource: string;
   idTarget: string;
   label: string;
+  edgeStyles: X6EdgeStyles;
+  vertices: string | Vertex[];
 }
 
 /**
@@ -134,6 +164,46 @@ export class X6 extends LitElement {
    * node_modules folder of the project.
    */
   static styles = css`
+    #contextMenu {
+      display: none;
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 0; 
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      border-radius: 4px;
+    }
+
+    #contextMenu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #contextMenu li {
+      padding: 8px 16px;
+      cursor: pointer;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      border-bottom: 1px solid #ddd;  
+      margin: 0;  
+      transition: background-color 0.3s;
+    }
+
+    #contextMenu li:last-child {
+      border-bottom: none; 
+    }
+
+    #contextMenu li:hover {
+      background-color: #3f3d56;
+      color: white;
+    }
+
+    #contextMenu li:active {
+      background-color: #2980b9;
+    }
+
     .x6-graph {
       position: relative;
       overflow: hidden;
@@ -603,139 +673,176 @@ export class X6 extends LitElement {
     }
   `;
 
-  /**
-  * the view for which x6 is going to be used in kuwaiba
-  * @type {number}
-  * 0 : Default view
-  * 1 : ObjectView
-  * 2 : FiberSplitterView
-  * 3 : SpliceBoxView
-  * 4 : PhysicalPathView
-  * 5 : PhysicalTreeView
-  * 6 : TopologyDesigner
+  /*
+  *  Graph type:
+  *  basic graph = 0 
+  *  interactions graph = 1 (with this graph you can enable or disable node movement)
   */
   @property()
-  kuwaiba_graph = 0;
+  graph_type = 0;
+
+  /*
+  *  A boolean value that defines whether or not the div containing the minimap is needed.
+  */
+  @property()
+  minimap_div = false;
+
+  /*
+  * A boolean value that defines whether or not the div containing the context menu is needed. 
+  */
+  @property()
+  context_menu_div = false;
 
   /**
   * The width of the graph.
-  * @type {number}
   */
   @property()
   graph_width: number = 0;
 
   /**
    * The height of the graph.
-   * @type {number}
    */
   @property()
   graph_height: number = 0;
 
   /**
   * The background color of the graph.
-  * @type {string}
-  * @default '#ffffff'
   */
   @property()
   graph_background_color: string = '#ffffff';
 
   /**
   * The ID of the node background image for the graph.
-  * @type {string}
   */
   @property()
   graph_node_background_id: string = '';
 
   /**
   * Whether to show the grid on the graph.
-  * @type {boolean}
-  * @default false
   */
   @property()
   graph_grid: boolean = false;
 
   /**
   * Whether panning is enabled on the graph.
-  * @type {boolean}
-  * @default false
   */
   @property()
   graph_panning: boolean = false;
 
   /**
   * Whether mouse wheel zooming is enabled on the graph.
-  * @type {boolean}
-  * @default false
   */
   @property()
   graph_mouse_wheel: boolean = false;
 
   /**
   * Whether to display node labels.
-  * @type {boolean}
-  * @default true
   */
   @property()
   nodes_label_state: boolean = true;
 
   /**
   * Toggles the color of node labels.
-  * @type {boolean}
-  * @default false
   */
   @property()
   nodes_label_color_toggle: boolean = false;
 
   /**
   * The background color of node labels.
-  * @type {string}
-  * @default '#15ed32'
   */
   @property()
   nodes_label_bgColor: string = '#15ed32';
   
   /**
   * The padding for exporting the graph as a JPEG image.
-  * @type {number}
-  * @default 20
   */
   @property()
   padding_export_graph_JPEG: number = 20;
 
   /**
   * The zoom level for the graph.
-  * @type {number}
-  * @default -0.1
   */
   @property()
   graph_zoom: number = -0.1;
 
   /**
   * The graph instance.
-  * @type {Graph | null}
-  * @private
   */
   private graph: Graph | null = null;
 
   /**
   * The transform plugin instance.
-  * @type {Transform | null}
-  * @private
   */
   private transformPlugin: Transform | null = null;
 
   /**
   * The scroller plugin instance.
-  * @type {Scroller | null}
-  * @private
   */
   private scrollerPlugin: Scroller | null = null;
+
+  /*
+  * A path that defines the location of a node style attribute in the X6 model.
+  */
+  private stylesPathNode: Record <string, string> = {
+    fillColor: "body/fill",
+    strokeColor: "body/stroke",
+    strokeWidth: "body/strokeWidth",
+    dashed: "body/strokeDasharray",
+    rounded: "body/r",
+    fontSize: "label/fontSize",
+    fontColor: "label/fill",
+    fontFamily: "label/fontFamily",
+    visibility: "label/visibility"
+  }
+
+   /*
+  * A path that defines the location of a edge style attribute in the X6 model.
+  */
+  private stylesPathEdge: Record <string, string> = {
+    strokeColor: "line/stroke",
+    strokeWidth: "line/strokeWidth",
+    dashed: "line/strokeDasharray",
+    rounded: "connector/args/radius",
+    fontSize: "no path",
+    fontColor: "no path",
+    fontFamily: "no path",
+  }
 
   /*
   * The main canvas element for rendering the graph. 
   */
   @query('#canvas')
   target!: HTMLDivElement;
+
+  /* 
+  * The context menu element 
+  */
+  @query('#contextMenu') 
+  contextMenu!: HTMLElement;
+
+  /**
+ * Button to bring the selected element to the front.
+ */
+  @query('#bringToFront') 
+  bringToFrontBtn!: HTMLElement;
+
+  /**
+ * Button to send the selected element to the back.
+ */
+  @query('#sendToBack') 
+  sendToBackBtn!: HTMLElement;
+
+  /**
+  * Button to move the selected element one unit up.
+  */
+  @query('#moveUp') 
+  moveUpBtn!: HTMLElement;
+
+  /**
+  * Button to move the selected element one unit down.
+  */
+  @query('#moveDown') 
+  moveDownBtn!: HTMLElement;
 
   /*
   * The minimap element for providing an overview of the graph.
@@ -745,41 +852,35 @@ export class X6 extends LitElement {
 
   protected firstUpdated() {
     if(this.target){
-      switch(this.kuwaiba_graph){
+      switch(this.graph_type){
         case 1:
-          this.initObjectView();
-        break;
-        case 2:
-          this.initFiberSplitterView();
-        break;
-        case 3:
-          this.initSpliceBoxView();
-        break;
-        case 4:
-          this.initPhysicalPathView();
-        break;
-        case 5:
-          this.initPhysicalTree();
-        break;
-        case 6:
-          this.initTopologyDesigner();
+          this.initGraphWithInteractions();
         break;
         default:
           this.initGraph();
         break;
       }
-
-      /*
-      * Launches an event indicating that the graph has been initialized.
-      */
       this.eventInitGraph();
     }
   }
 
   /**
+  * Dispatches a custom event indicating that the graph has been created.
+  */
+  private eventInitGraph(){
+    this.dispatchEvent(new CustomEvent('graph-created', {
+      detail: {
+        status: 'success'
+      }
+    }));
+  }
+
+  /* Methods to init a X6 graph */
+
+  /**
   * Initializes the graph with basic settings.
   */
-  private initGraph(){
+  public initGraph(){
     this.graph = new Graph({
       container: this.target,
       width: this.graph_width, 
@@ -805,7 +906,7 @@ export class X6 extends LitElement {
   /**
   * Initializes the graph with interactions.
   */
-  private initGraphWithInteractions(){
+  public initGraphWithInteractions(){
     this.graph = new Graph({
       container: this.target,
       width: this.graph_width, 
@@ -831,149 +932,123 @@ export class X6 extends LitElement {
    });
   }
 
-  /**
-  * Initializes the graph for the Kuwaiba ObjectView.
+  /* End of methods to init a X6 graph */
+
+  /*
+  * Methods for add X6 plugins
   */
-  private initObjectView(){
-    this.initGraph();
-    if(this.graph){
-      this.graph.zoom(this.graph_zoom);
 
-        /**
-        * Initializes the plugins used for graph manipulation and interaction.
-        */
-        this.scrollerPlugin = new Scroller({
-          enabled:true,
-          pannable: true,
-          pageVisible: true,
-          pageBreak: true,
-          width:600,
-          height: 600,
-          pageWidth: 620,
-          pageHeight: 620,
-          padding: 0,
-          autoResize : true , 
-          
-        });
-
-        this.graph.use(this.scrollerPlugin);
-        this.graph.setScrollbarPosition(600,600);
-        
-        this.graph.use(new Export());
-
-        this.graph.use(new Snapline({enabled: true}));
-
-        this.transformPlugin = new Transform({
-          rotating: false,
-          resizing: {
-            enabled: true,
-            orthogonal: true,
-            minWidth: 20,
-            minHeight: 20,
-            preserveAspectRatio: false,
-          },
-        });
-
-        this.graph.use(this.transformPlugin);
-
-        this.graph.use(new Selection({
-          enabled:true,
-          multiple : false , 
-          movable : true , 
-          showNodeSelectionBox : true , 
-        })); 
-
-        this.createGhost();
-
-        /**
-        * Initializes the event listeners for various cell interactions.
-        * This includes selecting cells, drawing edges, and managing node positions and dimensions.
-        */
-        this.eventCellSelected();
-        this.eventDrawEdge();
-        this.eventGetNodeNewPosition();
-        this.eventGetNodeBackgroundNewDimensions();
-        this.eventResizeNodeBackgroundDblClick();
+  /**
+  * Adds the scroller plugin to the graph with the specified configuration.
+  */
+  public addScrollerPlugin(
+    enabled: boolean,
+    pannable: boolean,
+    pageVisible: boolean,
+    pageBreak: boolean,
+    width: number,
+    height: number,
+    pageWidth: number,
+    pageHeight: number,
+    padding: number,
+    autoResize: boolean,
+    scrollerPositionLeft: number,
+    scrollerPositionTop: number
+  ) {
+    if (this.graph) {
+      this.scrollerPlugin = new Scroller({
+        enabled: enabled,
+        pannable: pannable,
+        pageVisible: pageVisible,
+        pageBreak: pageBreak,
+        width: width,
+        height: height,
+        pageWidth: pageWidth,
+        pageHeight: pageHeight,
+        padding: padding,
+        autoResize: autoResize
+      });
+  
+      this.graph.use(this.scrollerPlugin);
+      this.graph.setScrollbarPosition(scrollerPositionLeft, scrollerPositionTop);
     }
   }
 
   /**
-  * Initializes the graph for the Kuwaiba FiberSplitterView.
+  * Adds the export plugin to the graph.
   */
-  private initFiberSplitterView(){
-    this.initGraphWithInteractions(); 
-    if(this.graph){
-      this.scrollerPlugin = new Scroller({
-        enabled:true,
-        pannable: true,
-        pageVisible: true,
-        pageBreak: true,
-        width:this.graph_width,
-        height: this.graph_height,
-        pageWidth: this.graph_width + 20,
-        pageHeight: this.graph_height + (this.graph_height*0.8),
-        padding: 0,
-        autoResize : true , 
-      });
-
-      this.graph.use(this.scrollerPlugin);
-      this.graph.setScrollbarPosition(600,600);
-    }
-  }
-
-  /**
-  * Initializes the graph for the Kuwaiba SpliceBoxView.
-  */
-  private initSpliceBoxView(){
-    this.initGraphWithInteractions();
-    if(this.graph){
-      this.scrollerPlugin = new Scroller({
-        enabled:true,
-        pannable: true,
-        pageVisible: true,
-        pageBreak: true,
-        width:this.graph_width,
-        height: this.graph_height,
-        pageWidth: this.graph_width,
-        pageHeight: this.graph_height,
-        padding: 0,
-        autoResize : true , 
-      });
-
-      this.graph.use(this.scrollerPlugin);
-      this.graph.setScrollbarPosition(600,600);
-    }
-  }
-
-  /**
-  * Initializes the graph for the Kuwaiba PhysicalPathView.
-  */
-  private initPhysicalPathView(){
-    this.initGraphWithInteractions();
-    if(this.graph){
-      this.scrollerPlugin = new Scroller({
-        enabled:true,
-        pannable: true,
-        pageVisible: true,
-        pageBreak: true,
-        width:this.graph_width,
-        height: this.graph_height,
-        pageWidth: this.graph_width,
-        pageHeight: this.graph_height,
-        padding: 0,
-        autoResize : true , 
-      });
-
-      this.graph.use(this.scrollerPlugin);
-      this.graph.setScrollbarPosition(600,600);
-
+  public addExportPlugin(){
+    if(this.graph)
       this.graph.use(new Export());
+  } 
 
+  /**
+  * Adds the snapline plugin to the graph with the specified configuration.
+  * @param enabled - A boolean value to enable or disable the snapline feature.
+  */
+  public addSnaplinePlugin(enabled : boolean){
+    if(this.graph)
+      this.graph.use(new Snapline({enabled: enabled}));
+  }
+
+  /**
+  * Adds the transform plugin to the graph.
+  */
+  public addTransformPlugin(
+    rotating: boolean,
+    resizingEnabled: boolean,
+    resizingOrthogonal: boolean,
+    resizingMinWidth: number,
+    resizingMinHeight: number,
+    resizingPreserveAspectRatio: boolean
+  ) {
+    if (this.graph) {
+      this.transformPlugin = new Transform({
+        rotating: rotating,
+        resizing: {
+          enabled: resizingEnabled,
+          orthogonal: resizingOrthogonal,
+          minWidth: resizingMinWidth,
+          minHeight: resizingMinHeight,
+          preserveAspectRatio: resizingPreserveAspectRatio,
+        },
+      });
+  
+      this.graph.use(this.transformPlugin);
+    }
+  }
+
+  /**
+  * Adds the selection plugin to the graph.
+  */
+  public addSelectionPlugin(
+    enabled: boolean,
+    multiple: boolean,
+    rubberband: boolean, 
+    movable: boolean,
+    showNodeSelectionBox: boolean
+  ) {
+    if (this.graph) {
+      this.graph.use(new Selection({
+        enabled: enabled,
+        multiple: multiple,
+        rubberband: rubberband,
+        movable: movable,
+        showNodeSelectionBox: showNodeSelectionBox,
+      }));
+    }
+  }
+
+  /**
+  * Adds the mminimap plugin to the graph.
+  */
+  public addMinimapPlugin(width: number, height: number){
+    if(this.graph){
       if(this.minimap){
         const minimap = new MiniMap({
           container: this.minimap,
-          width: 200, 
-          height: 160, 
+          width: width, 
+          height: height, 
         });
   
         this.graph.use(minimap);
@@ -981,87 +1056,20 @@ export class X6 extends LitElement {
     }
   }
 
-  private initPhysicalTree(){
-    this.initGraphWithInteractions();
-    if(this.graph){
-      this.scrollerPlugin = new Scroller({
-        enabled:true,
-        pannable: true,
-        pageVisible: true,
-        pageBreak: true,
-        width:this.graph_width,
-        height: this.graph_height,
-        pageWidth: this.graph_width,
-        pageHeight: this.graph_height,
-        padding: 0,
-        autoResize : true , 
-      });
-
-      this.graph.use(this.scrollerPlugin);
-      this.graph.setScrollbarPosition(600,600);
-
-      this.graph.use(new Export());
-
-      if(this.minimap){
-        const minimap = new MiniMap({
-          container: this.minimap,
-          width: 200, 
-          height: 160, 
-        });
-  
-        this.graph.use(minimap);
-      }
-    }
-  }
-
-  private initTopologyDesigner(){
-    this.initGraph();
-    if(this.graph){
-      this.scrollerPlugin = new Scroller({
-        enabled:true,
-        pannable: true,
-        pageVisible: true,
-        pageBreak: true,
-        width:this.graph_width,
-        height: this.graph_height,
-        pageWidth: this.graph_width,
-        pageHeight: this.graph_height,
-        padding: 0,
-        autoResize : true , 
-      });
-
-      this.graph.use(this.scrollerPlugin);
-      this.graph.setScrollbarPosition(600,600);
-    }
-  }
-
-  /**
-  * Dispatches a custom event indicating that the graph has been created.
-  *
-  * @fires graph-created
-  * @param {Object} detail - Contains additional information about the event.
-  * @param {string} detail.status - The status of the graph creation.'.
+  /* 
+  * End of methods to add X6 plugins
   */
-  private eventInitGraph(){
-    this.dispatchEvent(new CustomEvent('graph-created', {
-      detail: {
-        status: 'success'
-      }
-    }));
-  }
+
+  /* 
+  * Methods for Graph View Management 
+  */
 
   /**
-  * Clears the graph by removing all cells and creating a ghost node.
-  * Dispatches an event to indicate that the graph has been cleaned.
-  * 
-  * @fires graph-cleaned
-  * @param {Object} detail - Contains the state of the cleaning operation.
-  * @param {string} detail.state - The state of the operation.
+  * Clears the graph by removing all cells.
   */
   public cleanGraph(){
     if(this.graph){
       this.graph.clearCells();
-      this.createGhost();
       this.dispatchEvent(new CustomEvent('graph-cleaned', {
         detail: {
           state: 'success'
@@ -1085,20 +1093,11 @@ export class X6 extends LitElement {
 
   /**
   * Refreshes the graph by clearing it and restoring its previous state.
-  * 
-  * This method creates a backup of the current graph, clears it, 
-  * and then re-populates it using the backup data.
-  * Dispatches an event to indicate that the graph has been refreshed.
-  * 
-  * @fires graph-refreshed
-  * @param {Object} detail - Contains the state of the refresh operation.
-  * @param {string} detail.state - The state of the operation.
   */
   public refreshGraph(){
     if(this.graph){
       const backup = this.graph.toJSON();
       this.graph.clearCells();
-      this.createGhost();
       this.graph.fromJSON(backup);
       this.dispatchEvent(new CustomEvent('graph-refreshed', {
         detail: {
@@ -1107,6 +1106,14 @@ export class X6 extends LitElement {
       }));
     }
   }
+
+  /* 
+  * End of methods for Graph View Management 
+  */
+  
+  /* 
+  * Methods for node selection functionalities
+  */
 
   /**
   * Selects a node in the graph and centers the view on it.
@@ -1128,89 +1135,48 @@ export class X6 extends LitElement {
   /**
   * Sets up an event listener for when a cell is selected in the graph.
   * 
-  * If the selected cell is not the background node, it dispatches a 
-  * custom event with the cell's ID and type (node or edge).
-  * 
-  * @fires cell-selected
-  * @param {Object} detail - Contains information about the selected cell.
-  * @param {string} detail.cell.id - The ID of the selected cell.
-  * @param {string} detail.cell.cellType - The type of the selected cell ('node' or 'edge').
+  * If the selected cell is not the background node.
   */
   public eventCellSelected(){
     if(this.graph){
       this.graph.on('cell:selected',({cell}) => {   
-        if(cell.id !== this.graph_node_background_id){
-          let cellType = '';
-          if(cell.isNode())
-            cellType = 'node';
-          else
-            cellType = 'edge';
-
-          this.dispatchEvent(new CustomEvent('cell-selected', {
-            detail: {
-              cell: {
-                id: cell.id,
-                cellType: cellType,
-              }
-            }
-          }));
-        }else
-          this.graph?.unselect(cell); // If the background node is selected, it unselects it.
+        const selectedCells = this.graph?.getSelectedCells();
+        if(selectedCells){
+          if(selectedCells.length == 1){
+            if(cell.id !== this.graph_node_background_id){
+              let cellType = '';
+              if(cell.isNode())
+                cellType = 'node';
+              else
+                cellType = 'edge';
+    
+              this.dispatchEvent(new CustomEvent('cell-selected', {
+                detail: {
+                  cell: {
+                    id: cell.id,
+                    cellType: cellType,
+                  }
+                }
+              }));
+            }else
+              this.graph?.unselect(cell); // If the background node is selected, it unselects it.
+          }
+        }
       })
     }
   }
 
   /**
-  * Sets up an event listener for when the background node is resized.
-  * 
-  * When the background node is resized, it dispatches a custom event 
-  * with the new dimensions (width and height) of the background node.
-  * 
-  * @fires background-resized
-  * @param {Object} detail - Contains the new dimensions of the background node.
-  * @param {string} detail.node.id - The ID of the resized background node.
-  * @param {number} detail.node.width - The new width of the background node.
-  * @param {number} detail.node.height - The new height of the background node.
+  * Registers an event listener for when a cell is unselected in the graph.
   */
-  public eventGetNodeBackgroundNewDimensions(){
+  public eventCellUnselect(){
     if(this.graph){
-      this.graph.on('node:resized', ({ node }) => {
-        if(node.id === this.graph_node_background_id){
-          this.dispatchEvent(new CustomEvent('background-resized', {
-            detail: {
-              node: {
-                id: node.id,
-                width: node.getSize().width ,
-                height: node.getSize().height,
-              }
-            }
-          }));
-        }
-      });
-    }
-  }
-
-  /**
-  * Sets up an event listener for when a node is moved in the graph.
-  * 
-  * When a node is moved, it dispatches a custom event with the new 
-  * position (x and y coordinates) of the moved node.
-  * 
-  * @fires node-moved
-  * @param {Object} detail - Contains the new position of the moved node.
-  * @param {string} detail.node.id - The ID of the moved node.
-  * @param {number} detail.node.x - The new x-coordinate of the moved node.
-  * @param {number} detail.node.y - The new y-coordinate of the moved node.
-  */
-  public eventGetNodeNewPosition(){
-    if(this.graph){
-      this.graph.on('node:moved', ({ node }) => {
-        this.dispatchEvent(new CustomEvent('node-moved', {
+      this.graph.on('cell:unselected', ({cell}) => {
+        this.dispatchEvent(new CustomEvent('cell-unselected', {
           detail: {
-            node: {
-              id: node.id,
-              x: node.position().x,
-              y: node.position().y,
+            cell: {
+              id: cell.id,
+              state: 'successful',
             }
           }
         }));
@@ -1218,16 +1184,19 @@ export class X6 extends LitElement {
     }
   }
 
+  /* End of methods for node selection functionalities*/
+
+  /* 
+  * Methods to draw objects in X6 graph
+  */
+
   /**
   * Creates a background node in the graph using the specified parameters.
+  * This method adds a node that serves as the background.
   * 
-  * This method adds a node that serves as the background, with properties 
-  * such as position, dimensions, and shape based on the provided 
-  * X6NodeBackground object.
-  * 
-  * @param {X6NodeBackground} X6NodeBackground - The background node configuration.
+  * @param {string} nodeData - OBJ in json format
   */
-  public createBackground(X6NodeBackground : X6NodeBackground){
+  public drawBackground(nodeData : string){
     if(this.graph){
       // If another background existed, remove it.
       if(this.graph_node_background_id){
@@ -1236,6 +1205,7 @@ export class X6 extends LitElement {
           this.graph.removeCell(oldBackground);
       }
       
+      const X6NodeBackground = JSON.parse(nodeData) as X6NodeBackground;
       this.graph_node_background_id = X6NodeBackground.id;
       this.graph.addNode({
         id:  X6NodeBackground.id,
@@ -1252,33 +1222,140 @@ export class X6 extends LitElement {
   }
 
   /**
-  * Removes the background node from the graph.
+  * Draws a node in the graph using the specified properties.
   * 
-  * This method checks if a background node ID is set and removes the 
-  * corresponding node from the graph if it exists.
+  * @param {string} nodeData - OBJ in json format
   */
-  public removeBackground(){
+  public drawNode(nodeData : string){
     if(this.graph){
-      if(this.graph_node_background_id != null && this.graph_node_background_id !== ''){
-        const node = this.graph.getCellById(this.graph_node_background_id);
-        this.graph_node_background_id = '';
-        if (node)
-          this.graph.removeCell(node);
-      }
+      const node = JSON.parse(nodeData) as X6Node;
+      const labelPosition = this.getNodeLabelConfiguration(node);
+      const port = this.getNodePortConfiguration(node.port);
+      this.graph.addNode({
+        id: node.id,
+        shape: node.shape,
+        x: node.geometry.coordinates.x,
+        y: node.geometry.coordinates.y,
+        width: node.geometry.dimensions.width ,
+        height: node.geometry.dimensions.height,
+        data: { enableMove: node.movable },
+        imageUrl:
+          node.imgUrl,
+        attrs: {
+          body: {
+            fill: node.nodeStyles.fillColor,
+            stroke: node.nodeStyles.strokeColor,
+            strokeWidth: node.nodeStyles.strokeWidth,
+            strokeDasharray: node.nodeStyles.dash,
+            rx: node.nodeStyles.borderRadius,
+            ry: node.nodeStyles.borderRadius
+          },
+          label: {
+            ...labelPosition,
+          },
+        },
+        ports: {
+          ...port
+        },
+        zIndex: node.nodeStyles.zIndex,
+      })
+
+      this.setNodeTools(node);
+      this.setParent(node.parentId, node.id);
     }
   }
 
   /**
-  * Creates a label position configuration for a node based on its position settings.
+  * Draws an edge in the graph's using the specified properties.
+  * 
+  * This method adds an edge connecting two nodes, defined by their 
+  * source and target IDs.
+  * 
+  * @param {string} edgeData - OBJ in json format.
+  */
+  public drawEdge(edgeData: string) {
+    if (this.graph) {
+      const edge = JSON.parse(edgeData);
+
+      const labelConfig = this.getEdgeLabelConfiguration(edge);
+      const edgeConnector = this.getEdgeConnector(edge);
+
+      const newEdge = this.graph.addEdge({
+        id: edge.id,
+        source: edge.idSource,
+        target: edge.idTarget,
+        zIndex: edge.edgeStyles.zIndex,
+        connector: { ...edgeConnector },
+        attrs: {
+            line: {
+              sourceMarker: null,
+              targetMarker: null,
+              stroke: edge.edgeStyles.strokeColor,
+              strokeWidth: edge.edgeStyles.strokeWidth,
+              strokeDasharray: edge.edgeStyles.dash
+            }
+        },
+        label: { ...labelConfig },
+      });
+
+      if (Array.isArray(edge.vertices) && edge.vertices.length > 0) 
+          newEdge.setVertices(this.getVerticesFormat(edge.vertices));
+        
+    }
+  }
+
+  /**
+  * Draws a text node in the graph using the specified properties.
+  * 
+  * @param {string} nodeData - OBJ in json format.
+  */
+  public drawText(nodeData : string){
+    if(this.graph){
+      const nodeText = JSON.parse(nodeData) as X6NodeText;
+      let position = this.calculateLabelPosition(nodeText);
+      const padding = 15;
+      this.graph.addNode({
+        id: nodeText.id,
+        width: nodeText.labelText.length * 8 * 0.6 + padding * 2,
+        height: (padding * 2) - 10,
+        x: position.x,
+        y: position.y,
+        shape: nodeText.shape,
+        data: { enableMove: nodeText.movable },
+        attrs: {
+          body:{
+            fill: nodeText.nodeStyles.fillColor,
+            stroke: nodeText.nodeStyles.strokeColor,
+            strokeWidth: nodeText.nodeStyles.strokeWidth,
+            rx: nodeText.nodeStyles.borderRadius,
+            ry: nodeText.nodeStyles.borderRadius,
+          },
+          label: {
+            text: nodeText.labelText,
+            fontSize: 10, 
+          }
+        }
+      });
+
+      this.setParent(nodeText.parentId, nodeText.id);
+    }
+  }
+
+  /* 
+  * End of methods to draw objects in X6 graph
+  */
+
+  /*
+  * Methods about objects configuration
+  */
+
+  /**
+  * Creates a label position configuration for a node based on its label position settings.
   *
-  * This method constructs the label's positioning attributes depending on whether the
-  * label is positioned at the bottom or at the center of the node. The configuration includes
-  * text properties, font size, and reference points for alignment.
-  *
-  * @param node - The node object containing label information, including its position and text.
+  * @param node - The node object containing label information.
   * @returns An object representing the label position configuration.
   */
-  private createLabelPosition(node: X6Node) {
+  private getNodeLabelConfiguration(node: X6Node) {
     let labelPosition;
     
     if (node.labelStyles.labelPosition === 'bottom') {
@@ -1313,82 +1390,43 @@ export class X6 extends LitElement {
   }
 
   /**
-  * Draws a node in the graph using the specified properties.
-  * 
-  * @param {X6Node} node - The configuration for the node to be drawn.
+  * Creates a port configuration for a node based on a boolean flag.
+  *
+  * @param port - A boolean indicating whether to create a port configuration.
+  * @returns An object representing the port configuration or an empty object.
   */
-  public drawNode(node : X6Node){
-    if(this.graph){
-      const labelPosition = this.createLabelPosition(node);
-      const port = this.createNodePort(node.port);
-      this.graph.addNode({
-        id: node.id,
-        shape: node.shape,
-        x: node.geometry.coordinates.x,
-        y: node.geometry.coordinates.y,
-        width: node.geometry.dimensions.width ,
-        height: node.geometry.dimensions.height,
-        data: { enableMove: node.movable },
-        imageUrl:
-          node.imgUrl,
-        attrs: {
-          body: {
-            fill: node.nodeStyles.fillColor,
-            stroke: node.nodeStyles.strokeColor,
-            strokeWidth: node.nodeStyles.strokeWidth,
-            strokeDasharray: node.nodeStyles.dash,
-            rx: node.nodeStyles.borderRadius,
-            ry: node.nodeStyles.borderRadius
-          },
-          label: {
-            ...labelPosition,
-          },
-        },
-        ports: {
-          ...port
-        },
-        zIndex: node.nodeStyles.zIndex,
-      })
+  public getNodePortConfiguration(port: boolean){
+    let nodePort = {};
 
-      this.setParent(node.parentId, node.id);
+    if(port){
+      nodePort = {
+        groups: {
+          group1: {
+            position: {
+              name: 'absolute', 
+              args: { x: '100%', y: '90%' },
+            },
+            attrs: {
+              circle: {
+                r: 6,
+                magnet: true,
+                stroke: '#31d0c6',
+                fill: '#fff',
+                strokeWidth: 2,
+              },
+              },
+            },
+          },
+          items: [
+            {
+              id: 'port1',
+              group: 'group1',
+            }
+          ]
+      }
     }
-  }
 
-  /**
-  * Draws a text node in the graph using the specified properties.
-  * 
-  * @param {X6NodeText} nodeText - The configuration for the text node to be drawn.
-  */
-  public drawText(nodeText : X6NodeText){
-    if(this.graph){
-      let position = this.calculateLabelPosition(nodeText);
-
-      const padding = 15;
-      this.graph.addNode({
-        id: nodeText.id,
-        width: nodeText.labelText.length * 8 * 0.6 + padding * 2,
-        height: (padding * 2) - 10,
-        x: position.x,
-        y: position.y,
-        shape: nodeText.shape,
-        data: { enableMove: nodeText.movable },
-        attrs: {
-          body:{
-            fill: nodeText.nodeStyles.fillColor,
-            stroke: nodeText.nodeStyles.strokeColor,
-            strokeWidth: nodeText.nodeStyles.strokeWidth,
-            rx: nodeText.nodeStyles.borderRadius,
-            ry: nodeText.nodeStyles.borderRadius,
-          },
-          label: {
-            text: nodeText.labelText,
-            fontSize: 10, 
-          }
-        }
-      });
-
-      this.setParent(nodeText.parentId, nodeText.id);
-    }
+    return nodePort;
   }
 
   /**
@@ -1396,9 +1434,9 @@ export class X6 extends LitElement {
   * 
   * @param nodeText - The text node representing the label, which is a child of a parent node.
   * @returns An object containing the calculated x and y coordinates for the label position 
-  * relative to the parent node (e.g., positioning above or below the parent node).
+  * relative to the parent node.
   */
-  private calculateLabelPosition(nodeText: X6NodeText) {
+   private calculateLabelPosition(nodeText: X6NodeText) {
     let positionX = nodeText.geometry.coordinates.x;
     let positionY = nodeText.geometry.coordinates.y;
 
@@ -1418,6 +1456,334 @@ export class X6 extends LitElement {
     }
   
     return { x: positionX, y: positionY };
+  }
+
+  /**
+  * This method retrieves the label configuration for an edge in the X6 graph.
+  * 
+  * @param edge - The edge object whose label configuration is to be retrieved.
+  * @returns The label configuration object for the edge.
+  */
+  private getEdgeLabelConfiguration(edge: X6Edge){
+    let labelConfig = {};
+    
+    if(edge.label && edge.label !== ''){
+      labelConfig = {
+        attrs: {
+          text: {
+            text: edge.label,
+            fontSize: edge.edgeStyles.labelFontSize,
+            fontFamily: edge.edgeStyles.labelFontFamily,
+            fill: edge.edgeStyles.labelTextColor,
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+          },
+          rect: {
+            ref: 'text',
+            refX: -4,
+            refY: -2,
+            refWidth: '100%',
+            refHeight: '100%',
+            refWidth2: 8,
+            refHeight2: 5,
+            stroke: '#000000',
+            strokeWidth: '1',
+            rx: 5,
+            ry: 5,
+          }
+        },
+        position: {
+          distance: 0.5,
+          offset: 0,
+        },
+      };
+    }
+
+    return labelConfig;
+  }
+
+  /**
+  * This method retrieves the connector configuration for an edge in the X6 graph.
+  * 
+  * @param edge - The edge object whose connector configuration is to be retrieved.
+  * @returns The connector configuration object for the edge.
+  */
+  private getEdgeConnector(edge : X6Edge){
+    let edgeConnector = {}
+    let valueRadious = 0;
+    let nameConnector = 'normal';
+
+    if(edge.edgeStyles.borderRadious && edge.edgeStyles.borderRadious > 0){
+      valueRadious = edge.edgeStyles.borderRadious;
+      nameConnector = 'rounded';
+      edgeConnector = {
+        name: nameConnector,
+        args: { radius: valueRadious}
+      }
+    }else{
+      edgeConnector = {
+        name: nameConnector,
+      }
+    }
+  
+    return edgeConnector;
+  }
+
+  /**
+  * This method formats a list of vertex objects, returning a new array of vertices with 
+  * their x and y coordinates.
+  * 
+  * @param vertices - An array of vertex objects containing x and y coordinates.
+  * @returns A new array of formatted vertex objects with x and y coordinates.
+  */
+  private getVerticesFormat(vertices: {x: number, y: number}[]) {
+    return vertices.map(vertex => ({
+      x: vertex.x,
+      y: vertex.y
+    }));
+  }
+
+  /*
+  * End of methods to objects configuration 
+  */
+
+  /*
+  * Methods to set object styles
+  */
+
+  public setNodeStyle(id: string, style: string, value:string){
+    if(this.graph){
+      const cell = this.graph.getCellById(id);
+      if(cell && cell.isNode()){
+        const node = cell as Node;
+        if(style in this.stylesPathNode){
+          const pathStyle = this.stylesPathNode[style];
+          if(style == "rounded"){
+            node.setAttrByPath(pathStyle + "x", value);
+            node.setAttrByPath(pathStyle + "y", value);
+          }else 
+            node.setAttrByPath(pathStyle, value);
+        }
+      }
+    }
+  }
+
+  public setEdgeStyle(id: string, style: string, value: string){
+    if(this.graph){
+      const cell = this.graph.getCellById(id);
+      if(cell && cell.isEdge()){
+        const edge = cell as Edge;
+        if(style in this.stylesPathEdge){
+          const pathStyle = this.stylesPathEdge[style];
+          if(style == "fontColor" || style == "fontSize" || style == "fontFamily"){
+            const label = edge.getLabelAt(0);
+            if(style == "fontColor"){
+              if(label && label.attrs && label.attrs.text){
+                label.attrs.text.fill = value;
+                edge.removeLabelAt(0);
+                edge.appendLabel(label);
+              }        
+            }else if(style == "fontSize"){
+              if(label && label.attrs && label.attrs.text){
+                label.attrs.text.fontSize = value;  
+                edge.removeLabelAt(0);
+                edge.appendLabel(label);
+              }
+            }else{
+              if(label && label.attrs && label.attrs.text){
+                label.attrs.text.fontFamily = value;
+                edge.removeLabelAt(0);
+                edge.appendLabel(label); 
+              }
+            }
+          }else if(style == "rounded"){
+            edge.removeProp('connector')
+            if(value && Number(value) > 0){
+              edge.setProp({
+                connector: {
+                  name: 'rounded',
+                  args: { radius: Number(value)}
+                }
+              })
+            }else{
+              edge.setProp({
+                connector:{
+                  name: 'normal'
+                }
+              })
+            }
+          }else{
+            edge.setAttrByPath(pathStyle, value);
+          }            
+        }
+      }
+    }
+  }
+
+  /*
+  * End of methods to set object styles 
+  */
+
+  /*
+  * Methods to configure x6-tools
+  */
+
+  /**
+  * This method sets tools for a given node based on its tools array.
+  * 
+  * @param node - The X6Node object which contains the tools to be set.
+  */
+  public setNodeTools(node: X6Node) {
+    if (Array.isArray(node.tools)) {  
+      for (const tool of node.tools) {
+        if(tool == 'node-editor')
+          this.setNodeEditorTool(node.id);
+      }
+    }
+  }
+
+  /**
+  * This method adds the 'node-editor' tool to a node if it doesn't already have it.
+  * 
+  * @param id - The id of the node to which the 'node-editor' tool will be added.
+  */
+  public setNodeEditorTool(id: string){
+    if(this.graph){
+      const node = this.graph.getCellById(id);
+      if(node){
+        if(!node.hasTool('node-editor')){
+          node.addTools({
+            name: 'node-editor',
+            args: {
+              getText: 'label/text',
+              setText: 'label/text',
+            }
+          });
+        }
+      }
+    }
+  }
+
+  /**
+  * This method listens for the 'mouseenter' event on edges.
+  * When the mouse enters an edge, it adds the 'vertices' and 'segments' tools to that edge.
+  */
+  public eventAddEdgeTools(){
+    if(this.graph){
+      this.graph.on('edge:mouseenter',({ edge })=>{   
+        edge.addTools(['vertices','segments']) 
+      })
+    }
+  }
+
+  /**
+  * This method listens for the 'mouseleave' event on edges.
+  * When the mouse leaves an edge, it removes all tools from that edge.
+  */
+  public eventRemoveEdgeTools(){
+    if(this.graph){
+      this.graph.on('edge:mouseleave',({ edge })=>{   
+        edge.removeTools()
+      })
+    }
+  }
+
+  /**
+  * This method listens for the 'mouseenter' event on nodes.
+  * When the mouse enters a node, it adds a remove button tool.
+  */
+  public eventAddNodeTools(){
+    if(this.graph){
+      this.graph.on('node:mouseenter', ({ node }) => {
+        node.addTools([
+        {
+          name: 'button-remove',
+          args: {
+            x: 0,
+            y: 0,
+          }
+        }])
+      });
+    }
+  }
+
+  /**
+  * This method listens for the 'mouseleave' event on nodes.
+  * When the mouse leaves a node, it removes the 'boundary' and 'button-remove' tools from the node.
+  */
+  public eventRemoveNodeTools(){
+    if(this.graph){
+      this.graph.on('node:mouseleave', ({ node }) => {
+        node.removeTool('button-remove');
+      });
+    }
+  }
+
+  /*
+  * End of methods to configure x6-tools
+  */
+
+  /**
+  * Sets up an event listener for when the background node is resized.
+  * 
+  * When the background node is resized, it dispatches a custom event 
+  * with the new dimensions (width and height) of the background node.
+  */
+  public eventGetNodeBackgroundNewDimensions(){
+    if(this.graph){
+      this.graph.on('node:resized', ({ node }) => {
+        if(node.id === this.graph_node_background_id){
+          this.dispatchEvent(new CustomEvent('background-resized', {
+            detail: {
+              node: {
+                id: node.id,
+                width: node.getSize().width ,
+                height: node.getSize().height,
+              }
+            }
+          }));
+        }
+      });
+    }
+  }
+
+  /**
+  * Sets up an event listener for when a node is moved in the graph.
+  * 
+  * When a node is moved, it dispatches a custom event with the new 
+  * position (x and y coordinates) of the moved node.
+  */
+  public eventGetNodeNewPosition(){
+    if(this.graph){
+      this.graph.on('node:moved', ({ node }) => {
+        this.dispatchEvent(new CustomEvent('node-moved', {
+          detail: {
+            node: {
+              id: node.id,
+              x: node.position().x,
+              y: node.position().y,
+            }
+          }
+        }));
+      });
+    }
+  }
+
+  /**
+  * Removes the background node from the graph.
+  * 
+  * This method checks if a background node ID is set and removes the 
+  * corresponding node from the graph if it exists.
+  */
+  public removeBackground(){
+    if(this.graph){
+      if(this.graph_node_background_id != null && this.graph_node_background_id !== ''){
+        const node = this.graph.getCellById(this.graph_node_background_id);
+        this.graph_node_background_id = '';
+        if (node)
+          this.graph.removeCell(node);
+      }
+    }
   }
 
   /**
@@ -1805,120 +2171,10 @@ export class X6 extends LitElement {
   }
 
   /**
-  * Creates a port configuration for a node based on a boolean flag.
-  *
-  * This method constructs a port object with specific attributes if the `port` parameter
-  * is true. The port is defined by its position and visual attributes. If `port` is false,
-  * an empty object is returned.
-  *
-  * @param port - A boolean indicating whether to create a port configuration.
-  * @returns An object representing the port configuration or an empty object.
-  */
-  public createNodePort(port: boolean){
-    let nodePort = {};
-
-    if(port){
-      nodePort = {
-        groups: {
-          group1: {
-            position: {
-              name: 'absolute', 
-              args: { x: '100%', y: '90%' },
-            },
-            attrs: {
-              circle: {
-                r: 6,
-                magnet: true,
-                stroke: '#31d0c6',
-                fill: '#fff',
-                strokeWidth: 2,
-              },
-              },
-            },
-          },
-          items: [
-            {
-              id: 'port1',
-              group: 'group1',
-            }
-          ]
-      }
-    }
-
-    return nodePort;
-  }
-
-  /**
-  * Draws an edge in the graph's using the specified properties.
-  * 
-  * This method adds an edge connecting two nodes, defined by their 
-  * source and target IDs.
-  * 
-  * @param {X6Edge} edge - The configuration for the edge to be drawn.
-  */
-  public drawEdge(edge: X6Edge){
-    if(this.graph){
-      let labelConfig = {};
-      
-      if (edge.label && edge.label !== "") {
-        labelConfig = {
-          attrs: {
-            text: {
-              text: edge.label,
-              fontSize: 12,
-              fill: '#000000',
-              textAnchor: 'middle',
-              textVerticalAnchor: 'middle',
-            },
-            rect: {
-              ref: 'text',
-              refX: -4,
-              refY: -2,
-              refWidth: '100%',
-              refHeight: '100%',
-              refWidth2: 8,
-              refHeight2: 5,
-              stroke: '#000000',
-              strokeWidth: '1',
-              rx: 5,
-              ry: 5,
-            },
-          },
-          position: {
-            distance: 0.5,
-            offset: 0,
-          },
-        };
-      }
-
-      this.graph.addEdge(
-        {
-          id: edge.id,
-          source : { cell: edge.idSource},
-          target: {cell : edge.idTarget},
-          attrs: {
-            line: {
-              sourceMarker: null,
-              targetMarker: null,
-            }
-          },  
-          ...(edge.label ? { label: labelConfig } : {}),
-        }
-      );
-    }
-  }
-
-  /**
   * Sets up an event listener for when an edge is connected in the graph.
   * 
   * When an edge is connected, it sets the attributes for the edge.
   * dispatches a custom event with details about the newly created edge.
-  * 
-  * @fires edge-created
-  * @param {Object} detail - Contains information about the created edge.
-  * @param {string} detail.edge.id - The ID of the created edge.
-  * @param {string} detail.edge.idSource - The ID of the source node for the edge.
-  * @param {string} detail.edge.idTarget - The ID of the target node for the edge.
   */
   public eventDrawEdge(){
     if(this.graph){
@@ -1946,6 +2202,22 @@ export class X6 extends LitElement {
 
       });
     }
+  }
+
+
+  public eventNodeChanged(){
+    if(this.graph){
+      this.graph.on('node:changed', ({ node }) => {
+        this.dispatchEvent(new CustomEvent('node-changed', {
+          detail: {
+            node: {
+              id: node.id,
+              newLabel:node.getAttrByPath('label/text')
+            }
+          }
+        }));
+      });
+    }  
   }
 
   /**
@@ -2040,6 +2312,15 @@ export class X6 extends LitElement {
     }
   }
 
+  public eventResizeNode(){
+    if(this.graph){
+      this.graph.on('node:dblclick', ({node}) => {
+        if(this.transformPlugin && node.shape != "image")
+          this.transformPlugin.createWidget(node); 
+      });
+    }
+  }
+
   /**
   * Sets up an event listener for double-click events on the background node.
   * 
@@ -2073,6 +2354,14 @@ export class X6 extends LitElement {
       this.centerGraph(center.id);
     }
   }  
+
+  public activateContextMenu(){
+    this.addEventListener('click', (e: Event) => {
+      if (!this.contextMenu.contains(e.target as HTMLElement)) {
+        this.contextMenu.style.display = 'none';
+      }
+    });
+  }
   
   /**
   * Exports the current graph as a JPEG image.
@@ -2096,45 +2385,112 @@ export class X6 extends LitElement {
     }
   }
 
+  public eventContextMenu() {
+    if (this.graph) {
+      this.graph.on('cell:contextmenu', (e) => {
+  
+        const x = e.e.clientX;  
+        const y = e.e.clientY; 
+
+        this.contextMenu.style.left = `${x}px`;
+        this.contextMenu.style.top = `${y}px`;
+
+        this.contextMenu.style.display = 'block';
+        this.contextMenu.setAttribute('data-cell-id', e.cell.id);
+      });
+    }
+  }
+  
+
+  public configureZIndexControls(){
+    this.bringToFrontBtn.addEventListener('click', () => this.bringToFront());
+    this.sendToBackBtn.addEventListener('click', () => this.sendToBack());
+    this.moveUpBtn .addEventListener('click', () => this.moveUpOneLevel());
+    this.moveDownBtn.addEventListener('click', () => this.moveDownOneLevel());
+  }
+
+  public bringToFront(){
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      let nextLevel = this.graph.getCellCount();
+      cell.setProp('zIndex', nextLevel);
+
+      this.dispatchEvent(new CustomEvent('bring-to-front', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none';  
+  }
+
+  public moveUpOneLevel() {
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      let currentZIndex = cell.getProp('zIndex')
+      if(currentZIndex)
+        cell.setProp('zIndex', currentZIndex+=1);
+      
+      this.dispatchEvent(new CustomEvent('bring-to-front', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none';  
+  }
+
+  public sendToBack(){
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      cell.setProp('zIndex', 1);
+
+      this.dispatchEvent(new CustomEvent('send-to-back', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none'; 
+  }
+  
+  public moveDownOneLevel() {
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      let currentZIndex = cell.getProp('zIndex')
+      if(currentZIndex && currentZIndex > 1)
+        cell.setProp('zIndex', currentZIndex-=1);
+
+      this.dispatchEvent(new CustomEvent('send-to-back', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none'; 
+
+  }
+
   /** 
   * The following methods are not used in the add-on; they are intended solely
   * for development and testing purposes within the web component. 
   */
-
-  /**
-  * Sets up an event listener for double-click events on edges in the graph.
-  * 
-  * When an edge is double-clicked, this method checks if the edge already 
-  * has an 'edge-editor' tool. If not, it adds the tool with a specified 
-  * background color. It then dispatches a custom event indicating that the 
-  * edge has been updated.
-  * 
-  * @fires edge-updated
-  * @param {Object} detail - Contains information about the edge update.
-  * @param {string} detail.node - Indicates the state of the edge update..
-  */
-  public eventEditEdgeDblCLick(){
-    if(this.graph){
-      this.graph.on('edge:dblclick', ({ edge }) => {
-        if (!edge.hasTool('edge-editor')) {
-          edge.addTools({
-              name: 'edge-editor',
-              args: {
-                attrs: {
-                  backgroundColor: '#fff',
-                },
-              },
-          });
-        }
-
-        const event = new CustomEvent('edge-updated', {
-          detail: { node: 'updated' },
-        });
-    
-        this.dispatchEvent(event);
-      });
-    }
-  }
 
   /**
   * Sets up an event listener for double-click events on the blank area of the graph.
@@ -2214,85 +2570,29 @@ export class X6 extends LitElement {
     }
   }
 
-  /**
-  * Updates the line color of all edges in the graph.
-  * 
-  * This method iterates through all edges and sets their stroke color to the 
-  * specified color. If there are no edges in the graph, no changes are made.
-  * 
-  * @param {string} color - The new color to be applied to the edges' line.
-  */
-  public updateEdgeLineColor(color: string){
-    if(this.graph){
-      let edges = this.graph.getEdges();
-      if(edges.length > 0){
-        edges.forEach((edge) => {
-          edge.setAttrs({
-            line:{
-              stroke: color, // Set the stroke color of the edge
-            }
-          });
-        });
-      }
-    }
-  }
-
-  /**
-  * Updates the background color of all edges in the graph.
-  * 
-  * This method iterates through all edges and sets their background fill 
-  * color to the specified color. If there are no edges in the graph, no 
-  * changes are made.
-  * 
-  * @param {string} color - The new background color to be applied to the edges.
-  */
-  public updateEdgeBgColor(color: string){
-    if(this.graph){
-      let edges = this.graph.getEdges();
-      if(edges.length > 0){
-        edges.forEach((edge) => {
-          edge.setAttrs({
-            rect:{
-              fill: color, // Set the fill color of the edge's background
-            }
-          });
-        });
-      }
-    }
-  }
-
-  /**
-  * Updates the stroke color of all edges in the graph.
-  * 
-  * This method iterates through all edges and sets their stroke color to 
-  * the specified color. If there are no edges in the graph, no changes are 
-  * made.
-  * 
-  * @param {string} color - The new stroke color to be applied to the edges.
-  */
-  public updateEdgeStrokeColor(color: string){
-    if(this.graph){
-      let edges = this.graph.getEdges();
-      if(edges.length > 0){
-        edges.forEach((edge) => {
-          edge.setAttrs({
-            rect:{
-              stroke:color,
-            }
-          });
-        });
-      }
-    }
-  }
+  /* End of methods don't use in the Addon */
 
   protected render(): unknown {
     return html`
       <div id="canvas" style="height: 100%; width: 100%;"></div>
-      ${this.kuwaiba_graph === 4 || this.kuwaiba_graph === 5 ? html`
+  
+      ${this.minimap_div ? html`
         <div id="minimap"></div>
+      ` : ''}
+  
+      ${this.context_menu_div? html`
+        <div id="contextMenu">
+          <ul>
+            <li id="bringToFront">Bring to Front</li>
+            <li id="sendToBack">Send to Back</li>
+            <li id="moveUp">Move up one level</li>
+            <li id="moveDown">Move down one level</li>
+          </ul>
+        </div>
       ` : ''}
     `;
   }
+  
 
 }
 

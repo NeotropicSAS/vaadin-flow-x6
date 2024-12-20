@@ -15,6 +15,7 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
+import com.neotropic.flow.component.antvx6.constants.X6Constants;
 import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
 import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
 
@@ -24,6 +25,7 @@ import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
 public abstract class X6AbstractNode extends X6Cell { 
+    private String shape;
     private String imgUrl;
     private boolean movable; 
     private String parentId;
@@ -33,12 +35,15 @@ public abstract class X6AbstractNode extends X6Cell {
     
     public X6AbstractNode(){
         super();
+        this.setCellType(X6Constants.CELL_NODE);
         this.labelStyles = new X6LabelStyles();
         this.nodeStyles = new X6NodeStyles();
     }
     
     public X6AbstractNode(String id, double x, double y,double width, double height, String shape){
-        super(id, x, y, width, height, shape);
+        super(id, x, y, width, height);
+        this.setCellType(X6Constants.CELL_NODE);
+        this.shape = shape;
         this.imgUrl = "";
         this.movable = true;
         this.parentId = "";
@@ -95,16 +100,19 @@ public abstract class X6AbstractNode extends X6Cell {
         this.nodeStyles = nodeStyles;
     }
     
-    @Override
     public void setShape(String shape) {
-        super.setShape(shape); 
+        this.shape = shape;
+    }
+
+    public String getShape() {
+        return this.shape; 
     }
 
     @Override
-    public String getShape() {
-        return super.getShape(); 
+    public String getCellType() {
+        return super.getCellType(); 
     }
-
+    
     @Override
     public void setGeometry(Geometry geometry) {
         super.setGeometry(geometry); 
@@ -124,5 +132,5 @@ public abstract class X6AbstractNode extends X6Cell {
     public String getId() {
         return super.getId(); 
     }
-
+    
 }

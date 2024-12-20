@@ -15,6 +15,11 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
+import com.neotropic.flow.component.antvx6.constants.X6Constants;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 
 /**
  * Represents a cell in the X6 graph.
@@ -23,14 +28,25 @@ package com.neotropic.flow.component.antvx6.objects;
 public class X6Cell {
     private String id;
     private Geometry geometry;
-    private String shape;
+    private String cellType;
+    private HashMap<String, String> styles;
+    private List<String> tools;
 
-    public X6Cell(){}
+    public X6Cell(){
+        this.styles = new HashMap<>();
+        this.tools = new ArrayList<>();
+    }
     
-    public X6Cell(String id, double x, double y, double width, double height, String shape) {
+    public X6Cell(String id, double x, double y, double width, double height) {
         this.id = id;
         this.geometry = new Geometry(x, y, width, height);
-        this.shape = shape;
+        this.styles = new HashMap<>();
+        this.tools = new ArrayList<>();
+    }
+    
+    public X6Cell(String id){
+        this.id = id;
+        this.styles = new HashMap<>();
     }
 
     public String getId() {
@@ -49,11 +65,40 @@ public class X6Cell {
         this.geometry = geometry;
     }
 
-    public String getShape() {
-        return shape;
+    public String getCellType() {
+        return cellType;
     }
 
-    public void setShape(String shape) {
-        this.shape = shape;
+    public void setCellType(String cellType) {
+        this.cellType = cellType;
     }
+    
+    public HashMap<String, String> getStyles() {
+        return styles;
+    }
+
+    public void setStyles(HashMap<String, String> styles) {
+        this.styles = styles;
+    }
+    
+    public boolean isEdge(){
+        return this.cellType.equals(X6Constants.CELL_EDGE);
+    }
+    
+    public boolean isNode(){
+        return this.cellType.equals(X6Constants.CELL_NODE );
+    }
+    
+    public void setStyle(String style, String value){
+        styles.put(style, value);
+    }
+
+    public List<String> getTools() {
+        return tools;
+    }
+
+    public void setTools(List<String> tools) {
+        this.tools = tools;
+    }
+    
 }

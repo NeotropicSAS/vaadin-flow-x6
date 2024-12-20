@@ -17,6 +17,8 @@ package com.neotropic.flow.component.antvx6.objects;
 
 import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
 import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Represents a node in the X6 graph.
@@ -42,6 +44,11 @@ public class X6Node extends X6AbstractNode{
         this.port = port;
     }
 
+    @Override
+    public String getCellType() {
+        return super.getCellType(); 
+    }
+    
     @Override
     public void setNodeStyles(X6NodeStyles nodeStyles) {
         super.setNodeStyles(nodeStyles); 
@@ -132,4 +139,24 @@ public class X6Node extends X6AbstractNode{
         return super.getId(); 
     }
 
+    @Override
+    public void setStyles(HashMap<String, String> styles) {
+        super.setStyles(styles); 
+    }
+
+    @Override
+    public HashMap<String, String> getStyles() {
+        return super.getStyles(); 
+    }
+
+    @Override
+    public void setTools(List<String> tools) {
+        super.setTools(tools); 
+    }
+
+    @Override
+    public List<String> getTools() {
+        return super.getTools(); 
+    }
+    
 }

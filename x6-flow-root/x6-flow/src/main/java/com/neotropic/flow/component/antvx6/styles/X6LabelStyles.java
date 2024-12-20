@@ -30,7 +30,7 @@ public class X6LabelStyles {
     
     public X6LabelStyles(){
         this.labelTextColor = "black";
-        this.labelFontSize = 14;
+        this.labelFontSize = 15;
         this.labelFontFamily = "Arial";
         this.labelPosition = X6Constants.LABEL_NODE_POSITION_DEFAULT;
         this.labelVisibility = X6Constants.LABEL_NODE_VISIBLE;
