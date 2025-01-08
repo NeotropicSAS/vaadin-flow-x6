@@ -23,6 +23,7 @@ import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.neotropic.flow.component.antvx6.objects.X6NodeBackground;
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
 import com.neotropic.flow.component.antvx6.objects.Vertex;
+import com.neotropic.flow.component.antvx6.objects.X6EdgeBasic;
 import com.neotropic.flow.component.antvx6.objects.X6NodeText;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -52,7 +53,6 @@ public class AntvX6 extends Div {
     /*
     * Basic graph configuration properties
     */
-    private static final String PROPERTY_KUWAIBA_GRAPH = "kuwaiba_graph";
     private static final String PROPERTY_GRAPH_TYPE = "graph_type";
     private static final String PROPERTY_MINIMAP_DIV = "minimap_div";
     private static final String PROPERTY_CONTEXT_MENU_DIV = "context_menu_div";
@@ -84,7 +84,7 @@ public class AntvX6 extends Div {
     /*
     * List of edges present in the graph.
     */
-    private List<X6Edge> edges;
+    private List<X6EdgeBasic> edges;
     /*
     * List of listeners.
     */
@@ -102,27 +102,37 @@ public class AntvX6 extends Div {
     * Methods to set property X6 web component
     */
     
+    /**
+    * Sets the type of the graph.
+    * 
+    * @param graphType the type of the graph to set. Use 0 for a basic graph and 1 for a graph with interactions.
+    */
     public void setGraphType(int graphType){
         getElement().setProperty(PROPERTY_GRAPH_TYPE, graphType);
     }
     
-    public void setMinimapState(boolean state){
-        getElement().setProperty(PROPERTY_MINIMAP_DIV , state);
-    }
-    
-    public void setContextMenuState(boolean state){
-        getElement().setProperty(PROPERTY_CONTEXT_MENU_DIV, state);
-    }
-    
     /**
-    * Set the Kuwaiba graph.
+    * Enables or disables the minimap state.
+    * 
+    * @param state the state to set for the minimap. Pass true to enable the minimap div, or false to disable it.
     */
-    public void setKuwaibaGraph(int kuwaibaGraph){
-        this.getElement().setProperty(PROPERTY_KUWAIBA_GRAPH ,kuwaibaGraph);
-    }
+   public void setMinimapState(boolean state){
+       getElement().setProperty(PROPERTY_MINIMAP_DIV , state);
+   }
+
+   /**
+    * Enables or disables the context menu state.
+    * 
+    * @param state the state to set for the context menu.Pass true to enable the context menu div, or false to disable it.
+    */
+   public void setContextMenuState(boolean state){
+       getElement().setProperty(PROPERTY_CONTEXT_MENU_DIV, state);
+   }
+
     
     /**
     * Set the ID of the node background.
+     * @param idBackground id of the background node
     */
     public void setNodeBackgroundId(String idBackground){
         this.getElement().setProperty(PROPERTY_GRAPH_NODE_BACKGROUND_ID, idBackground);
@@ -194,8 +204,7 @@ public class AntvX6 extends Div {
     /**
     * Toggles the color setting for node labels.
     *
-    * @param toggle true if the node's label color has been toggled, 
-    *                false if it has not been toggled.
+    * @param toggle true if the node's label color has been toggled, false if it has not been toggled.
     */
     public void setNodesLabelColorToggle(boolean toggle){
         this.getElement().setProperty(PROPERTY_NODES_LABEL_COLOR_TOGGLE, toggle);
@@ -230,6 +239,36 @@ public class AntvX6 extends Div {
     
     /*
     * End of methods to set property X6 web component
+    */
+    
+    /*
+    * Canvas manipulation methods
+    */
+    
+    /**
+    * Clears all nodes and edges from the graph.
+    * 
+    * This method removes all nodes and edges from the local lists,
+    * effectively resetting the graph's state.
+    */
+    public void cleanGraph(){
+        this.nodes.clear();
+        this.edges.clear();
+        getElement().callJsFunction("cleanGraph");
+    }
+    
+    /**
+    * Refreshes the graph.
+    * 
+    * Creates a backup of the current graph, clears it, and then 
+    * re-populates it using the backup data.
+    */
+    public void refreshGraph(){
+        this.getElement().callJsFunction("refreshGraph");
+    }
+    
+    /*
+    * End of canvas manipulation methods
     */
     
     /*
@@ -278,39 +317,15 @@ public class AntvX6 extends Div {
     * End of methods to add X6 plugins
     */
     
-    /**
-    * Clears all nodes and edges from the graph.
-    * 
-    * This method removes all nodes and edges from the local lists,
-    * effectively resetting the graph's state. It also calls the
-    * JavaScript method `cleanGraph()` to ensure that the graph
-    * is cleared in the frontend representation.
+    /*
+    * Methods to manipulate nodes
     */
-    public void cleanGraph(){
-        this.nodes.clear();
-        this.edges.clear();
-        getElement().callJsFunction("cleanGraph");
-    }
-    
-    /**
-    * Refreshes the graph.
-    * 
-    * This method calls the JavaScript method `refreshGraph()`,
-    * which is responsible for re-rendering the graph.It creates
-    * a backup of the current graph, clears it, and then 
-    * re-populates it using the backup data.
-    */
-    public void refreshGraph(){
-        this.getElement().callJsFunction("refreshGraph");
-    }
     
     /**
     * Draws the node background for a graph.
     * 
-    * This method constructs a background object for a node using the provided
-    * `X6NodeBackground` instance. It calls the JavaScript function `createBackground`
-    * to create the visual representation of the background on the frontend.
-    * This method also updates the internal reference to the node background.
+    * This method constructs a background object using the provided
+    * `X6NodeBackground` instance.
     * 
     * @param background the X6NodeBackground object
     */
@@ -364,9 +379,6 @@ public class AntvX6 extends Div {
     
     /**
     * Removes the node background of the the graph.
-    * 
-    * This method calls the JavaScript function `removeBackground()`, which 
-    * handles the removal of the node background from the frontend representation.
     */
     public void removeNodeBackground(){
         getElement().callJsFunction("removeBackground");
@@ -380,7 +392,7 @@ public class AntvX6 extends Div {
     * Draws a visual representation of a node in the graph.
     *
     * This method constructs and sends the necessary data to the frontend
-    * to create a node. It calls the JavaScript function `drawNode`.
+    * to create a node.
     * 
     * @param node the X6Node object to be draw.
     */
@@ -439,21 +451,13 @@ public class AntvX6 extends Div {
         this.nodes.add(node);
     }
 
-    
-    public void setNodeStyle(String id, String style, String value){
-        this.getElement().callJsFunction("setNodeStyle", id, style, value);
-    }
-    
-    public void setEdgeStyle(String id, String style, String value){
-        this.getElement().callJsFunction("setEdgeStyle", id, style, value);
-    }
-
     /**
     * Draws a visual representation of a text for a node in the graph.
     *
     * This method constructs and sends the necessary data to the frontend
-    * to create a text node. It calls the JavaScript function `drawText`.
+    * to create a text node.
     * 
+     * @param nodeText the X6NodeText object to be draw
     */
     public void drawText(X6NodeText nodeText) {
         JsonObject textData = new JsonObject();
@@ -502,55 +506,20 @@ public class AntvX6 extends Div {
 
         this.textNodes.add(nodeText);
     }
-
-    /**
-    * Adjusts the width of a node based on its children.
-    * This method calculates the necessary width for the specified node by considering
-    * the reserved space, spacing between child nodes, and any additional height required.
-    *
-    * @param id - The unique identifier of the node whose width is to be adjusted.
-    * @param reserveSpace - The amount of space to reserve for the initial and final child.
-    * @param childSpacing - The spacing to apply between each child node.
-    * @param heightIncrease - The additional height to add to the node's dimensions.
-    */
-    public void adjustNodeWidth(String id, int reserveSpace, int childSpacing, int heightIncrease){
-        this.getElement().callJsFunction("adjustNodeWidth", id, reserveSpace, childSpacing, heightIncrease);
-    }
-    
-    public void executeTree(String containerId, int spacing){
-        this.getElement().callJsFunction("executeTree", containerId, spacing);
-    }
-    
-    public void orderChildrenByName(String idContainer){
-        this.getElement().callJsFunction("orderChildrenByName", idContainer);
-    }
-    
-    public void adjustNodeHeight(String id, int childSpacing){
-        this.getElement().callJsFunction("adjustNodeHeight", id, childSpacing);
-    }
     
     /**
-    * Centers the children of a specified parent node horizontally within that parent node.
-    * This method calculates the starting position and applies the specified spacing 
-    * between child nodes to ensure they are evenly centered.
-    *
-    * @param id - The unique identifier of the parent node whose children will be centered.
-    * @param startX - The starting X position from which to center the child nodes.
-    * @param childSpacing - The spacing to apply between each child node.
+    * Sets the style for a specific node.
+    * 
+    * @param id the ID of the node to which the style should be applied.
+    * @param style the name of the style property to modify.
+    * @param value the value to set for the specified style property.
     */
-    public void centerChildrenHorizontally(String id, int startX, int childSpacing){
-        this.getElement().callJsFunction("centerChildrenHorizontally", id, startX, childSpacing);
-    }
-    
-    public void centerChildrenVertically(String id, int childSpacing){
-        this.getElement().callJsFunction("centerChildrenVertically", id, childSpacing);
+    public void setNodeStyle(String id, String style, String value){
+        this.getElement().callJsFunction("setNodeStyle", id, style, value);
     }
     
     /**
     * Establishes a parent-child relationship between two nodes in the graph.
-    *
-    * This method constructs and sends the necessary data to the frontend
-    * to link a child node to its parent node. It calls the JavaScript function `setFather`.
     *
     * @param idParent the id of the parent node
     * @param idChild the id of the child node
@@ -559,16 +528,46 @@ public class AntvX6 extends Div {
         this.getElement().callJsFunction("setParent", idParent, idChild);
     }
     
-    public void establishHierarchyThroughEdges(){
-        this.getElement().callJsFunction("establishHierarchyThroughEdges");
+    /**
+    * Selects a specified node in the graph. (Make sure to add the Selection plugin first)
+    *
+    * @param id id of the X6Node to be select.
+    */
+    public void selectNode(String id) {
+        getElement().callJsFunction("selectNode", id);
     }
     
     /**
-    * Draws a visual representation of an edge in the graph.
+    * Updates the label state of all nodes in the graph.
     *
-    * This method constructs and sends the necessary data to the frontend
-    * to create an edge of the object view. It calls the JavaScript function
-    * `drawEdge`.
+    * This method calls the JavaScript function `updateNodesLabelState()`,
+    * which updates the visibility or state of labels for all nodes in the
+    * graph.
+    */
+    public void updateNodesLabelState(){
+        getElement().callJsFunction("updateNodesLabelState");
+    }
+    
+    /**
+    * Updates the label color of all nodes in the graph.
+    *
+    * This method calls the JavaScript function `updateNodesLabelColor()`,
+    * which modifies the color of labels for all nodes in the graph. 
+    */
+    public void updateNodesLabelColor(){
+        getElement().callJsFunction("updateNodesLabelColor");
+    }
+    
+    /*
+    * End of methods to manipulate nodes
+    */
+    
+    /*
+    * Methods to manipulate edges
+    */
+    
+    /**
+    * Draws a visual representation of an edge in the graph with a single label.
     * 
     * @param edge the X6Edge object to be draw.
     */
@@ -606,50 +605,92 @@ public class AntvX6 extends Div {
 
         this.edges.add(edge);
     }
-
+    
     /**
-    * Selects a specified node in the graph.
-    *
-    * This method constructs and sends the necessary data to the frontend
-    * to visually select a node. It calls the JavaScript function
-    * `selectNode`.
+    * Draws a visual representation of an edge in the graph with no labels.
     * 
-    * @param id id of the X6Node to be select.
+    * @param edge the X6EdgeBasic object to be draw.
     */
-    public void selectNode(String id) {
-        getElement().callJsFunction("selectNode", id);
-    }
+    public void drawEBasicEdge(X6EdgeBasic edge) {
+        JsonObject edgeData = new JsonObject();
 
-    
-    /**
-    * Updates the label state of all nodes in the graph.
-    *
-    * This method calls the JavaScript function `updateNodesLabelState()`,
-    * which updates the visibility or state of labels for all nodes in the
-    * graph.
-    */
-    public void updateNodesLabelState(){
-        getElement().callJsFunction("updateNodesLabelState");
+        edgeData.addProperty("id", edge.getId());
+        edgeData.addProperty("idSource", edge.getIdSource());
+        edgeData.addProperty("idTarget", edge.getIdTarget());
+
+        JsonObject edgeStyles = new JsonObject();
+        edgeStyles.addProperty("strokeColor", edge.getEdgeStyles().getStrokeColor());
+        edgeStyles.addProperty("strokeWidth", edge.getEdgeStyles().getStrokeWidth());
+        edgeStyles.addProperty("dash", edge.getEdgeStyles().getDash());
+        edgeStyles.addProperty("borderRadius", edge.getEdgeStyles().getBorderRadious());
+        edgeStyles.addProperty("zIndex", edge.getEdgeStyles().getzIndex());
+        edgeData.add("edgeStyles", edgeStyles);
+
+        JsonArray verticesArray = new JsonArray();
+        for (Vertex vertex : edge.getVertices()) {
+            JsonObject vertexObj = new JsonObject();
+            vertexObj.addProperty("x", vertex.getX());
+            vertexObj.addProperty("y", vertex.getY());
+            verticesArray.add(vertexObj);
+        }
+        edgeData.add("vertices", verticesArray);
+
+        getElement().callJsFunction(
+            "drawBasicEdge", edgeData.toString() 
+        );
+
+        this.edges.add(edge);
     }
     
     /**
-    * Updates the label color of all nodes in the graph.
+    * Sets the style for an edge in the graph.
     *
-    * This method calls the JavaScript function `updateNodesLabelColor()`,
-    * which modifies the color of labels for all nodes in the graph. 
+    * @param id The unique identifier of the edge whose style needs to be modified.
+    * @param style The style property to be changed.
+    * @param value The value to be applied to the style property.
+    *
+    * This method calls a JavaScript function (`setEdgeStyle`) to apply the style changes to the specified edge.
     */
-    public void updateNodesLabelColor(){
-        getElement().callJsFunction("updateNodesLabelColor");
+    public void setEdgeStyle(String id, String style, String value){
+        this.getElement().callJsFunction("setEdgeStyle", id, style, value);
     }
     
-    /**
-    * Sets the absolute positions of parent nodes based on their widths.
-    * 
-    * This method positions parent nodes, which may have multiple children, 
-    * starting from a specified horizontal offset. 
-    *
-    * @param parentsId - A JSON string containing the unique identifiers of the parent nodes to be positioned.
+    /*
+    * End of methods to manipulate edges
     */
+
+    /*
+    * These methods will be deleted very soon and implemented in Java, because they cover business rules that are not necessary or of interest. 
+    */
+
+    public void adjustNodeWidth(String id, int reserveSpace, int childSpacing, int heightIncrease){
+        this.getElement().callJsFunction("adjustNodeWidth", id, reserveSpace, childSpacing, heightIncrease);
+    }
+    
+    public void executeTree(String containerId, int spacing){
+        this.getElement().callJsFunction("executeTree", containerId, spacing);
+    }
+    
+    public void orderChildrenByName(String idContainer){
+        this.getElement().callJsFunction("orderChildrenByName", idContainer);
+    }
+    
+    public void adjustNodeHeight(String id, int childSpacing){
+        this.getElement().callJsFunction("adjustNodeHeight", id, childSpacing);
+    }
+    
+    public void centerChildrenHorizontally(String id, int startX, int childSpacing){
+        this.getElement().callJsFunction("centerChildrenHorizontally", id, startX, childSpacing);
+    }
+    
+    public void centerChildrenVertically(String id, int childSpacing){
+        this.getElement().callJsFunction("centerChildrenVertically", id, childSpacing);
+    }
+    
+    public void establishHierarchyThroughEdges(){
+        this.getElement().callJsFunction("establishHierarchyThroughEdges");
+    }
+    
     public void setPositionAbsoluteParent(List<String> parentsId) {
         StringBuilder jsonArray = new StringBuilder("[");
         for (int i = 0; i < parentsId.size(); i++) {
@@ -663,6 +704,10 @@ public class AntvX6 extends Div {
     }
     
     /*
+    * End of  methods that will be deleted very soon and implemented in Java. 
+    */
+    
+    /*
     * Events of X6
     * These methods must be initialized if you need the listeners for these events to work.
     */
@@ -671,8 +716,8 @@ public class AntvX6 extends Div {
         getElement().callJsFunction("eventCellSelected");
     }
 
-    public void initEventDrawEdge() {
-        getElement().callJsFunction("eventDrawEdge");
+    public void initEventNodesConnected() {
+        getElement().callJsFunction("eventNodesConnected");
     }
 
     public void initEventGetNodeNewPosition() {
@@ -731,17 +776,21 @@ public class AntvX6 extends Div {
     * End of X6 events
     */
     
+    
+    /*
+    * Other methods 
+    */
+    
+    /*
+    * Creates a ghost node in the middle of the canvas, it is used to organize the canvas
+    */
     public void addGhost(){
         getElement().callJsFunction("createGhost");
     }
     
-    
-  
-
     /**
     * Exports the current graph as a JPEG image.
     *
-    * This method calls the JavaScript function `exportGraphToJPEG`,
     * The function handles the conversion of the graph into a JPEG format and download the image.
     *
     * @param filename the desired name for the exported JPEG file.
@@ -750,46 +799,31 @@ public class AntvX6 extends Div {
         this.getElement().callJsFunction("exportGraphToJPEG", filename);
     }
     
-    /**
-    * Registers a listener for the EdgeCreatedEvent.
-    *
-    * @param listener the listener to be notified when an edge is created
-    * @return a Registration object that can be used to unregister the listener
+    /*
+    * End of other methods
     */
-    public Registration addEdgeCreatedListener(ComponentEventListener<EdgeCreatededEvent> listener) {
-        return addListener(EdgeCreatededEvent.class, listener);
+    
+    
+    /*
+    * Listeners
+    */
+    
+    public Registration addNodesConnectedListener(ComponentEventListener<EdgeCreatedEvent> listener) {
+        return addListener(EdgeCreatedEvent.class, listener);
     }
     
-    /**
-    * Registers a listener for the GraphCreatedEvent.
-    *
-    * @param listener the listener to be notified when a graph is created
-    * @return a Registration object that can be used to unregister the listener
-    */
     public Registration addGraphCreatedListener(ComponentEventListener<GraphCreatedEvent> listener) {
         Registration registration = addListener(GraphCreatedEvent.class, listener);
         this.lstListeners.add(registration);
         return registration;
     }
     
-    /**
-     * Registers a listener for the GraphCleanedEvent.
-     *
-     * @param listener the listener to be notified when a graph is cleaned
-     * @return a Registration object that can be used to unregister the listener
-     */
     public Registration addGraphCleanedListener(ComponentEventListener<GraphCleanedEvent> listener) {
         Registration registration = addListener(GraphCleanedEvent.class, listener);
         lstListeners.add(registration);
         return registration;
     }
     
-    /**
-     * Registers a listener for the GraphRefresheddEvent.
-     *
-     * @param listener the listener to be notified when a graph is refreshed
-     * @return a Registration object that can be used to unregister the listener
-     */
     public Registration addGraphRefreshedListener(ComponentEventListener<GraphRefresheddEvent> listener) {
         Registration registration = addListener(GraphRefresheddEvent.class, listener);
         lstListeners.add(registration);
@@ -808,45 +842,25 @@ public class AntvX6 extends Div {
         return addListener(NodeChangedEvent.class, listener);
     }
    
-    /**
-     * Registers a listener for the NodeMovedEvent.
-     *
-     * @param listener the listener to be notified when a node is moved
-     * @return a Registration object that can be used to unregister the listener
-     */
     public Registration addNodeMovedListener(ComponentEventListener<NodeMovedEvent> listener) {
         return addListener(NodeMovedEvent.class, listener);
     }
     
-    /**
-     * Registers a listener for the NodeBackgroundResizedEvent.
-     *
-     * @param listener the listener to be notified when a node's background is resized
-     * @return a Registration object that can be used to unregister the listener
-     */
     public Registration addNodeBackgroundResizedListener(ComponentEventListener<NodeBackgroundResizedEvent> listener) {
         return addListener(NodeBackgroundResizedEvent.class, listener);
     }
 
-    /**
-     * Registers a listener for the CellSelectedEvent.
-     *
-     * @param listener the listener to be notified when a cell (node or edge) is selected
-     * @return a Registration object that can be used to unregister the listener
-     */
     public Registration addCellSelectedListener(ComponentEventListener<CellSelectedEvent> listener) {
         return addListener(CellSelectedEvent.class, listener);
     }
     
-    /**
-     * Registers a listener for the CellSelectedEvent.
-     *
-     * @param listener the listener to be notified when a cell (node or edge) is selected
-     * @return a Registration object that can be used to unregister the listener
-     */
     public Registration addCellUnselectedListener(ComponentEventListener<CellUnselectedEvent> listener) {
         return addListener(CellUnselectedEvent.class, listener);
     }
+    
+    /*
+    * End of Listeners
+    */
     
     /**
      * Removes listeners.
@@ -855,6 +869,10 @@ public class AntvX6 extends Div {
         lstListeners.forEach(item -> item.remove());
         lstListeners = new ArrayList();
     }
+    
+    /*
+    * Getter and Setter of AntvX6 
+    */
 
     public X6NodeBackground getNodeBackground() {
         return nodeBackground;
@@ -872,11 +890,11 @@ public class AntvX6 extends Div {
         this.nodes = nodes;
     }
     
-    public List<X6Edge> getEdges() {
+    public List<X6EdgeBasic> getEdges() {
         return edges;
     }
 
-    public void setEdges(List<X6Edge> edges) {
+    public void setEdges(List<X6EdgeBasic> edges) {
         this.edges = edges;
     }
 
@@ -887,6 +905,14 @@ public class AntvX6 extends Div {
     public void setTextNodes(List<X6NodeText> textNodes) {
         this.textNodes = textNodes;
     }
+    
+    /*
+    * End of Getter and Setter of AntvX6 
+    */
+    
+    /*
+    * Events of X6
+    */
     
     /**
     * Event fired when a graph has been created.
@@ -1127,12 +1153,12 @@ public class AntvX6 extends Div {
     * Event fired when a edge has been created.
     */
     @DomEvent("edge-created")
-    public static class EdgeCreatededEvent extends ComponentEvent<AntvX6> {
+    public static class EdgeCreatedEvent extends ComponentEvent<AntvX6> {
         private final String id;
         private final String idSource;
         private final String idTarget;
 
-        public EdgeCreatededEvent(AntvX6 source, boolean fromClient,
+        public EdgeCreatedEvent(AntvX6 source, boolean fromClient,
                                   @EventData("event.detail.edge.id") String id,
                                   @EventData("event.detail.edge.idSource") String idSource,
                                   @EventData("event.detail.edge.idTarget") String idTarget) {
@@ -1154,5 +1180,9 @@ public class AntvX6 extends Div {
             return idTarget;
         }
     }
+    
+    /*
+    * End of events of X6
+    */
   
 }

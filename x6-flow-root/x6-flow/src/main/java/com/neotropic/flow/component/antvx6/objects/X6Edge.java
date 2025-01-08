@@ -17,37 +17,34 @@ package com.neotropic.flow.component.antvx6.objects;
 
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
 import com.neotropic.flow.component.antvx6.styles.X6EdgeStyles;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 /**
- * Represents a connection between two or more nodes in the X6 graph.
+ * Represents a connection between two or more nodes in the X6 graph with one label.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
-public class X6Edge extends X6Cell{
-    private String idSource;
-    private String idTarget;
+public class X6Edge extends X6EdgeBasic{
     private String label;
-    private X6EdgeStyles edgeStyles;
-    private List<Vertex> vertices;
     
     public X6Edge(){
         super();
-        super.setCellType(X6Constants.CELL_EDGE);
-        this.vertices = new ArrayList<>();
-        this.edgeStyles = new X6EdgeStyles();
     }
 
     public X6Edge(String id, String idSource, String idTarget, String label) {
-        super(id);
+        super(id, idSource, idTarget);
         super.setCellType(X6Constants.CELL_EDGE);
-        this.idSource = idSource;
-        this.idTarget = idTarget;
         this.label = label;
-        this.vertices = new ArrayList<>();
-        this.edgeStyles = new X6EdgeStyles();
     }
+    
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+    
 
     @Override
     public String getId() {
@@ -88,49 +85,50 @@ public class X6Edge extends X6Cell{
     public List<String> getTools() {
         return super.getTools(); 
     }
-    
-    public String getIdSource() {
-        return idSource;
+
+    @Override
+    public void addVertex(Vertex vertex) {
+        super.addVertex(vertex); 
     }
 
-    public void setIdSource(String idSource) {
-        this.idSource = idSource;
-    }
-
-    public String getIdTarget() {
-        return idTarget;
-    }
-
-    public void setIdTarget(String idTarget) {
-        this.idTarget = idTarget;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public X6EdgeStyles getEdgeStyles() {
-        return edgeStyles;
-    }
-
-    public void setEdgeStyles(X6EdgeStyles edgeStyles) {
-        this.edgeStyles = edgeStyles;
-    }
-    
-    public List<Vertex> getVertices() {
-        return vertices;
-    }
-
+    @Override
     public void setVertices(List<Vertex> vertices) {
-        this.vertices = vertices;
+        super.setVertices(vertices); 
     }
-    
-    public void addVertex(Vertex vertex){
-        this.vertices.add(vertex);
+
+    @Override
+    public List<Vertex> getVertices() {
+        return super.getVertices(); 
+    }
+
+    @Override
+    public void setEdgeStyles(X6EdgeStyles edgeStyles) {
+        super.setEdgeStyles(edgeStyles); 
+    }
+
+    @Override
+    public X6EdgeStyles getEdgeStyles() {
+        return super.getEdgeStyles(); 
+    }
+
+    @Override
+    public void setIdTarget(String idTarget) {
+        super.setIdTarget(idTarget); 
+    }
+
+    @Override
+    public String getIdTarget() {
+        return super.getIdTarget(); 
+    }
+
+    @Override
+    public void setIdSource(String idSource) {
+        super.setIdSource(idSource); 
+    }
+
+    @Override
+    public String getIdSource() {
+        return super.getIdSource(); 
     }
     
 }

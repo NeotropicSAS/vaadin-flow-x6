@@ -16,10 +16,11 @@
 
 package com.neotropic.flow.component.antvx6.demo;
 
-import com.neotropic.flow.component.antvx6.AntvX6;
-import com.neotropic.flow.component.antvx6.constants.X6Constants;
-import com.neotropic.flow.component.antvx6.objects.Geometry;
-import com.neotropic.flow.component.antvx6.objects.X6Node;
+import com.neotropic.flow.component.antvx6.demo.components.HeaderComponent;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.ListItem;
+import com.vaadin.flow.component.html.OrderedList;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
@@ -33,38 +34,49 @@ import com.vaadin.flow.server.PWA;
         description = "This is an example Vaadin application.",
         enableInstallPrompt = false)
 public class MainView extends VerticalLayout {
-   
-    public MainView() {
-        
-       /* Create the canvas */
-       AntvX6 x6Canvas = new AntvX6();
-               
-       
-       x6Canvas.setGrapthWidth(600);
-       x6Canvas.setGraptHeight(600);
-       x6Canvas.setGrid(true);
-       
-       /* Add the canvas to the view */
-       add(x6Canvas);
 
-       /*Create a node object from x6 and set its properties */
-       X6Node router = new X6Node();
-       router.setId("router-01");
-       router.setGeometry(new Geometry(100 ,100 ,32 ,32));
-       router.setShape(X6Constants.SHAPE_IMAGE);
-       router.setImgUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZj-3Gf3IOMX44LXAIpUVhghfvXsCEId-EYmMtnvoKLnsMLUQxmuj4EH8aUfYiJoMn9o&usqp=CAU");
-       router.setMovable(true);
-       router.setPort(true);
-       router.getNodeStyles().setzIndex(1);
-       router.setLabelText("router");
-       router.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
-       
-       x6Canvas.addGraphCreatedListener(evt -> {
-           /* When the graph has been created, we draw the node. */
-           x6Canvas.drawNode(router);
-       });
-       
-    }        
+    private static String HEADER_TEXT = "Vaddin Flow X6 Examples";
+    
+    public MainView(){
+        initComponents();
+    }  
+    
+    private void initComponents(){
+        setSizeFull();
+        setDefaultHorizontalComponentAlignment(Alignment.START); 
+        
+        // Header of the View
+        createHeader();
+        
+        //Basic Examples
+        createBasicExamples();
+        
+    }
+    
+    private void createHeader(){
+        HeaderComponent header = new HeaderComponent(HEADER_TEXT, null);
+        add(header);
+    }
+    
+    private void createBasicExamples(){
+        OrderedList basicExamples = new OrderedList();
+
+        Anchor canvas = new Anchor("/basic/examples/canvas", "Canvas");
+        canvas.setTarget("_blank");
+        
+        Anchor nodes = new Anchor("/basic/examples/nodes", "Nodes");
+        nodes.setTarget("_blank");
+        
+        Anchor edges = new Anchor("/basic/examples/edges", "Edges");
+        edges.setTarget("_blank");
+        
+        basicExamples.add(new ListItem(canvas));
+        basicExamples.add(new ListItem(nodes));
+        basicExamples.add(new ListItem(edges));
+
+        add(new H3("Basic examples"), basicExamples);
+    }
+
 
 }
 

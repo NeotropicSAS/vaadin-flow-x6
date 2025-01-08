@@ -140,13 +140,28 @@ interface Vertex {
 /**
 * Represents an edge connecting two nodes in a graph.
 */
-interface X6Edge extends X6Cell{
+interface X6EdgeBasic extends X6Cell {
   idSource: string;
   idTarget: string;
   label: string;
   edgeStyles: X6EdgeStyles;
   vertices: string | Vertex[];
 }
+
+/**
+* Represents an edge connecting two nodes in a graph with a Label.
+*/
+
+interface X6Edge extends X6EdgeBasic{
+  label: string;
+}
+
+/**
+*  Commented because it is not yet supported
+*/
+// interface X6EdgeMultipleLabels extends X6EdgeBasic {
+//   labels: string[];
+// }
 
 /**
  * AntV X6 element.
@@ -1207,6 +1222,8 @@ export class X6 extends LitElement {
       
       const X6NodeBackground = JSON.parse(nodeData) as X6NodeBackground;
       this.graph_node_background_id = X6NodeBackground.id;
+      const labelPosition = this.getNodeLabelConfiguration(X6NodeBackground);
+
       this.graph.addNode({
         id:  X6NodeBackground.id,
         shape: X6NodeBackground.shape,
@@ -1214,8 +1231,21 @@ export class X6 extends LitElement {
         y: X6NodeBackground.geometry.coordinates.y,
         width: X6NodeBackground.geometry.dimensions.width,
         height: X6NodeBackground.geometry.dimensions.height,
-        imageUrl:
-        X6NodeBackground.imgUrl,
+        data: { enableMove: X6NodeBackground.movable },
+        imageUrl:X6NodeBackground.imgUrl,
+        attrs: {
+          body: {
+            fill: X6NodeBackground.nodeStyles.fillColor,
+            stroke: X6NodeBackground.nodeStyles.strokeColor,
+            strokeWidth: X6NodeBackground.nodeStyles.strokeWidth,
+            strokeDasharray: X6NodeBackground.nodeStyles.dash,
+            rx: X6NodeBackground.nodeStyles.borderRadius,
+            ry: X6NodeBackground.nodeStyles.borderRadius
+          },
+          label: {
+            ...labelPosition,
+          },
+        },
         zIndex:X6NodeBackground.nodeStyles.zIndex
       });
     }
@@ -1239,8 +1269,7 @@ export class X6 extends LitElement {
         width: node.geometry.dimensions.width ,
         height: node.geometry.dimensions.height,
         data: { enableMove: node.movable },
-        imageUrl:
-          node.imgUrl,
+        imageUrl: node.imgUrl,
         attrs: {
           body: {
             fill: node.nodeStyles.fillColor,
@@ -1265,6 +1294,73 @@ export class X6 extends LitElement {
     }
   }
 
+    /**
+  * Draws a text node in the graph using the specified properties.
+  * 
+  * @param {string} nodeData - OBJ in json format.
+  */
+    public drawText(nodeData : string){
+      if(this.graph){
+        const nodeText = JSON.parse(nodeData) as X6NodeText;
+        const labelDefaultPosition = this.getNodeLabelConfiguration(nodeText);
+        let position = this.calculateLabelPosition(nodeText);
+
+        this.graph.addNode({
+          id: nodeText.id,
+          width: nodeText.geometry.dimensions.width,
+          height: nodeText.geometry.dimensions.height,
+          x: position.x,
+          y: position.y,
+          shape: nodeText.shape,
+          data: { enableMove: nodeText.movable },
+          attrs: {
+            body:{
+              fill: nodeText.nodeStyles.fillColor,
+              stroke: nodeText.nodeStyles.strokeColor,
+              strokeWidth: nodeText.nodeStyles.strokeWidth,
+              strokeDasharray: nodeText.nodeStyles.dash,
+              rx: nodeText.nodeStyles.borderRadius,
+              ry: nodeText.nodeStyles.borderRadius,
+            },
+            label: {
+              ...labelDefaultPosition,
+            }
+          }
+        });
+  
+        this.setParent(nodeText.parentId, nodeText.id);
+      }
+    }
+
+  public drawBasicEdge(edgeData: string) {
+    if (this.graph) {
+      const edge = JSON.parse(edgeData) as X6EdgeBasic;
+
+      const edgeConnector = this.getEdgeConnector(edge);
+
+      const newEdge = this.graph.addEdge({
+        id: edge.id,
+        source: edge.idSource,
+        target: edge.idTarget,
+        zIndex: edge.edgeStyles.zIndex,
+        connector: { ...edgeConnector },
+        attrs: {
+            line: {
+              sourceMarker: null,
+              targetMarker: null,
+              stroke: edge.edgeStyles.strokeColor,
+              strokeWidth: edge.edgeStyles.strokeWidth,
+              strokeDasharray: edge.edgeStyles.dash
+            }
+        }
+      });
+
+      if (Array.isArray(edge.vertices) && edge.vertices.length > 0) 
+          newEdge.setVertices(this.getVerticesFormat(edge.vertices));
+        
+    }
+  }
+
   /**
   * Draws an edge in the graph's using the specified properties.
   * 
@@ -1275,7 +1371,7 @@ export class X6 extends LitElement {
   */
   public drawEdge(edgeData: string) {
     if (this.graph) {
-      const edge = JSON.parse(edgeData);
+      const edge = JSON.parse(edgeData) as X6Edge;
 
       const labelConfig = this.getEdgeLabelConfiguration(edge);
       const edgeConnector = this.getEdgeConnector(edge);
@@ -1304,43 +1400,6 @@ export class X6 extends LitElement {
     }
   }
 
-  /**
-  * Draws a text node in the graph using the specified properties.
-  * 
-  * @param {string} nodeData - OBJ in json format.
-  */
-  public drawText(nodeData : string){
-    if(this.graph){
-      const nodeText = JSON.parse(nodeData) as X6NodeText;
-      let position = this.calculateLabelPosition(nodeText);
-      const padding = 15;
-      this.graph.addNode({
-        id: nodeText.id,
-        width: nodeText.labelText.length * 8 * 0.6 + padding * 2,
-        height: (padding * 2) - 10,
-        x: position.x,
-        y: position.y,
-        shape: nodeText.shape,
-        data: { enableMove: nodeText.movable },
-        attrs: {
-          body:{
-            fill: nodeText.nodeStyles.fillColor,
-            stroke: nodeText.nodeStyles.strokeColor,
-            strokeWidth: nodeText.nodeStyles.strokeWidth,
-            rx: nodeText.nodeStyles.borderRadius,
-            ry: nodeText.nodeStyles.borderRadius,
-          },
-          label: {
-            text: nodeText.labelText,
-            fontSize: 10, 
-          }
-        }
-      });
-
-      this.setParent(nodeText.parentId, nodeText.id);
-    }
-  }
-
   /* 
   * End of methods to draw objects in X6 graph
   */
@@ -1355,7 +1414,7 @@ export class X6 extends LitElement {
   * @param node - The node object containing label information.
   * @returns An object representing the label position configuration.
   */
-  private getNodeLabelConfiguration(node: X6Node) {
+  private getNodeLabelConfiguration(node: X6AbstractNode) {
     let labelPosition;
     
     if (node.labelStyles.labelPosition === 'bottom') {
@@ -1436,27 +1495,34 @@ export class X6 extends LitElement {
   * @returns An object containing the calculated x and y coordinates for the label position 
   * relative to the parent node.
   */
-   private calculateLabelPosition(nodeText: X6NodeText) {
+  private calculateLabelPosition(nodeText: X6NodeText) {
     let positionX = nodeText.geometry.coordinates.x;
     let positionY = nodeText.geometry.coordinates.y;
 
-    if(this.graph){   
-      const parent = this.graph.getCellById(nodeText.parentId);
-      if (parent && nodeText.labelPositionRelative) {
-        let xCenterTop = parent.getBBox().x + (parent.getBBox().width / 2);
-        if (nodeText.labelPositionRelative === 'top') {
-          positionX = xCenterTop - ((nodeText.labelText.length * 8 * 0.6 + 15 * 2) / 2);
-          positionY = parent.getBBox().y + 2;
+    if (this.graph) {
+        const parent = this.graph.getCellById(nodeText.parentId);
+        if (parent) {
+            const parentBBox = parent.getBBox();
+            const xCenterTop = parentBBox.x + (parentBBox.width / 2);
+
+            if (nodeText.labelPositionRelative) {
+                if (nodeText.labelPositionRelative === 'top') {
+                    positionX = xCenterTop - (nodeText.geometry.dimensions.width / 2);
+                    positionY = parentBBox.y - 10;
+                }
+
+                if (nodeText.labelPositionRelative === 'bottom') {
+                    positionX = xCenterTop - (nodeText.geometry.dimensions.width / 2);
+                    positionY = parentBBox.y + parentBBox.height + 10;
+                }
+            }
         }
-        if (nodeText.labelPositionRelative === 'bottom') {
-          positionX = xCenterTop - ((nodeText.labelText.length * 8 * 0.6 + 15 * 2) / 2);
-          positionY = parent.getBBox().y + parent.getBBox().height + 2;
-        }
-      }
     }
-  
+
     return { x: positionX, y: positionY };
-  }
+}
+
+  
 
   /**
   * This method retrieves the label configuration for an edge in the X6 graph.
@@ -2176,30 +2242,22 @@ export class X6 extends LitElement {
   * When an edge is connected, it sets the attributes for the edge.
   * dispatches a custom event with details about the newly created edge.
   */
-  public eventDrawEdge(){
+  public eventNodesConnected(){
     if(this.graph){
       this.graph.on('edge:connected', ({ edge }) => {
-        edge.setAttrs(
-          {
-            line: {
-              sourceMarker: null,
-              targetMarker: null,
+        if(edge.getSourceCell() != null && edge.getTargetCell != null){
+          this.dispatchEvent(new CustomEvent('edge-created', {
+            detail: {
+              edge: {
+                id: edge.id,
+                idSource: edge.getSourceCell()?.id,
+                idTarget: edge.getTargetCell()?.id,
+              }
             }
-          }
-        )
+          }));
 
-        this.dispatchEvent(new CustomEvent('edge-created', {
-          detail: {
-            edge: {
-              id: edge.id,
-              idSource: edge.getSourceCell()?.id,
-              idTarget: edge.getTargetCell()?.id,
-            }
-          }
-        }));
-        
-        this.graph?.removeEdge(edge);
-
+          this.graph?.removeEdge(edge);
+        }
       });
     }
   }
@@ -2486,91 +2544,6 @@ export class X6 extends LitElement {
     this.contextMenu.style.display = 'none'; 
 
   }
-
-  /** 
-  * The following methods are not used in the add-on; they are intended solely
-  * for development and testing purposes within the web component. 
-  */
-
-  /**
-  * Sets up an event listener for double-click events on the blank area of the graph.
-  * 
-  * When the blank area is double-clicked, this method calls the `createRect` 
-  * method to add a new rectangle node to the graph.
-  */
-  public eventCreateNodeDblCLick(){
-    if(this.graph){
-      this.graph.on('blank:dblclick',() => {
-        this.createRect();
-      })
-    }
-  }  
-
-  /**
-  * Creates a new rectangle node in the graph at a fixed position.
-  * 
-  * The new node has a specific size, shape, label, and styling attributes.
-  * It also includes a port for connections. After the node is created, it 
-  * is centered in the graph.
-  */
-  public createRect() {
-    if (this.graph) {
-      let newRec = this.graph.addNode({
-        x: 300,
-        y: 300,
-        width: 32,
-        height: 32,
-        shape: 'rect',
-        label: 'label example of guyana francesa in africa far away',
-        attrs: {
-          body: {
-            fill: '#219ebc',
-            stroke: '#219ebc',
-          },
-          label: {
-            fontFamily: 'cursive',
-            fontSize: 12,
-            refX: 0.5,
-            refY : '100%' , 
-            refY2 : 4 , 
-            textAnchor: 'middle',
-            textVerticalAnchor : 'top' , 
-          },
-        },
-        ports: {
-          groups: {
-            group1: {
-              position: {
-                name: 'absolute', 
-                args: { x: '100%', y: '90%' },
-              },
-              attrs: {
-                circle: {
-                  r: 6,
-                  magnet: true,
-                  stroke: '#31d0c6',
-                  fill: '#fff',
-                  strokeWidth: 2,
-                },
-                },
-              },
-            },
-            items: [
-                {
-                  id: 'port1',
-                  group: 'group1',
-                 
-                }
-            ],
-          },
-          zIndex: 2
-      });
-
-      this.centerGraph(newRec.id);
-    }
-  }
-
-  /* End of methods don't use in the Addon */
 
   protected render(): unknown {
     return html`
