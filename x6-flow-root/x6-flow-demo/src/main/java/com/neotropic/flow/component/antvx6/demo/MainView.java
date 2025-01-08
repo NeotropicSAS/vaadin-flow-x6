@@ -70,13 +70,16 @@ public class MainView extends VerticalLayout {
         Anchor edges = new Anchor("/basic/examples/edges", "Edges");
         edges.setTarget("_blank");
         
+        Anchor styles = new Anchor("/basic/examples/styles", "Styles");
+        styles.setTarget("_blank");
+        
         basicExamples.add(new ListItem(canvas));
         basicExamples.add(new ListItem(nodes));
         basicExamples.add(new ListItem(edges));
+        basicExamples.add(new ListItem(styles));
 
         add(new H3("Basic examples"), basicExamples);
     }
-
 
 }
 
