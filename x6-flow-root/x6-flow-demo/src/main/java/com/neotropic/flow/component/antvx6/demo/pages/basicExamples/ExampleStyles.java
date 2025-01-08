@@ -43,6 +43,9 @@ public class ExampleStyles extends VerticalLayout{
     public ExampleStyles(){
         this.factory = new X6Factory();
         
+        setSizeFull();
+        setDefaultHorizontalComponentAlignment(Alignment.START); 
+        
         createHeader();
         createExamples();
     }

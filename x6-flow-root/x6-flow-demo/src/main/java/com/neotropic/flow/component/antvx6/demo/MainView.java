@@ -48,9 +48,12 @@ public class MainView extends VerticalLayout {
         // Header of the View
         createHeader();
         
-        //Basic Examples
+        //Basic example
         createBasicExamples();
-        
+        //Event examples
+        createEventExamples();
+        //UI components examples
+        createUIComponentsExamples();
     }
     
     private void createHeader(){
@@ -78,8 +81,33 @@ public class MainView extends VerticalLayout {
         basicExamples.add(new ListItem(edges));
         basicExamples.add(new ListItem(styles));
 
-        add(new H3("Basic examples"), basicExamples);
+        add(new H3("Basic"), basicExamples);
     }
+    
+    private void createEventExamples(){
+        OrderedList eventExamples = new OrderedList();
 
+        Anchor events = new Anchor("/examples/events", "Events");
+        events.setTarget("_blank");
+        
+        eventExamples.add(new ListItem(events));
+        
+        add(new H3("Events"), eventExamples);
+    }
+    
+    private void createUIComponentsExamples(){
+        OrderedList UIComponents = new OrderedList();
+
+        Anchor tools = new Anchor("", "Tools");
+        tools.setTarget("_blank");
+        
+        Anchor plugins = new Anchor("", "PLugins");
+        plugins.setTarget("_blank");
+        
+        UIComponents.add(new ListItem(tools));
+        UIComponents.add(new ListItem(plugins));
+        
+        add(new H3("UI Components"), UIComponents);
+    }
 }
 
