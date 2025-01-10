@@ -116,20 +116,19 @@ public class AntvX6 extends Div {
     * 
     * @param state the state to set for the minimap. Pass true to enable the minimap div, or false to disable it.
     */
-   public void setMinimapState(boolean state){
-       getElement().setProperty(PROPERTY_MINIMAP_DIV , state);
-   }
+    public void setMinimapState(boolean state){
+        getElement().setProperty(PROPERTY_MINIMAP_DIV , state);
+    }
 
-   /**
-    * Enables or disables the context menu state.
-    * 
-    * @param state the state to set for the context menu.Pass true to enable the context menu div, or false to disable it.
-    */
-   public void setContextMenuState(boolean state){
-       getElement().setProperty(PROPERTY_CONTEXT_MENU_DIV, state);
-   }
+    /**
+     * Enables or disables the context menu state.
+     * 
+     * @param state the state to set for the context menu.Pass true to enable the context menu div, or false to disable it.
+     */
+    public void setContextMenuState(boolean state){
+        getElement().setProperty(PROPERTY_CONTEXT_MENU_DIV, state);
+    }
 
-    
     /**
     * Set the ID of the node background.
      * @param idBackground id of the background node
@@ -275,6 +274,22 @@ public class AntvX6 extends Div {
     * Methods to add X6 plugins
     */
     
+    /**
+    * Adds a scroller plugin
+    *
+    * @param enabled              Whether the scroller is enabled.
+    * @param pannable             Whether the scroller is pannable.
+    * @param pageVisible          Whether the page is visible.
+    * @param pageBreak            Whether the page breaks are enabled.
+    * @param width                The width of the scroller.
+    * @param height               The height of the scroller.
+    * @param pageWidth            The width of the page.
+    * @param pageHeight           The height of the page.
+    * @param padding              The padding around the scroller.
+    * @param autoResize           Whether the scroller should auto-resize.
+    * @param scrollerPositionLeft The left position of the scroller.
+    * @param scrollerPositionTop  The top position of the scroller.
+    */
     public void addScrollerPlugin(boolean enabled, boolean pannable, boolean pageVisible, boolean pageBreak,
         double width, double height, double pageWidth, double pageHeight, double padding, boolean autoResize,
         double scrollerPositionLeft, int scrollerPositionTop)
@@ -286,14 +301,32 @@ public class AntvX6 extends Div {
         );
     }
     
+    /**
+    * Adds an export plugin to the element, enabling the ability to export the graph as an image.
+    */
     public void addExportPlugin(){
         getElement().callJsFunction("addExportPlugin");
     }
-    
+
+    /**
+     * Adds a snapline plugin to nodes, enabling or disabling snapline functionality for better alignment.
+     *
+     * @param enabled Whether the snapline functionality is enabled or disabled.
+     */
     public void addSnaplinePlugin(boolean enabled){
         getElement().callJsFunction("addSnaplinePlugin", enabled);
     }
     
+    /**
+    * Adds a transform plugin, enabling transformation features like rotating and resizing.
+    *
+    * @param rotating                  Whether rotating is enabled.
+    * @param resizingEnabled           Whether resizing is enabled.
+    * @param resizingOrthogonal        Whether to display the intermediate adjustment points
+    * @param resizingMinWidth          The minimum width allowed when resizing.
+    * @param resizingMinHeight         The minimum height allowed when resizing.
+    * @param resizingPreserveAspectRatio Whether the aspect ratio is preserved during resizing.
+    */
     public void addTransformPlugin(boolean rotating, boolean resizingEnabled, boolean resizingOrthogonal, 
         int resizingMinWidth, int resizingMinHeight, boolean resizingPreserveAspectRatio)
     {
@@ -303,12 +336,27 @@ public class AntvX6 extends Div {
         );
     }
     
+    /**
+    * Adds a selection plugin to the element, enabling various selection features like multiple selection, rubberband, and movement.
+    *
+    * @param enabled                Whether selection is enabled.
+    * @param multiple               Whether multiple selection is allowed.
+    * @param rubberband             Whether to enable the box selection node function.
+    * @param movable                Whether selected nodes can be moved.
+    * @param showNodeSelectionBox   Whether the node selection box is shown.
+    */
     public void addSelectionPlugin(boolean enabled, boolean multiple,boolean rubberband ,boolean movable, boolean showNodeSelectionBox) {
         getElement().callJsFunction(
             "addSelectionPlugin", enabled, multiple, rubberband ,movable, showNodeSelectionBox
         );
     }
     
+    /**
+     * Adds a minimap plugin to the element, providing a smaller, overview version of the graph.
+     *
+     * @param width  The width of the minimap.
+     * @param height The height of the minimap.
+     */
     public void addMinimapPlugin(int width, int height){
         getElement().callJsFunction("addMinimapPlugin", width, height);
     }
@@ -324,8 +372,7 @@ public class AntvX6 extends Div {
     /**
     * Draws the node background for a graph.
     * 
-    * This method constructs a background object using the provided
-    * `X6NodeBackground` instance.
+    * This method constructs a background object in the canvas
     * 
     * @param background the X6NodeBackground object
     */
@@ -390,9 +437,6 @@ public class AntvX6 extends Div {
     
     /**
     * Draws a visual representation of a node in the graph.
-    *
-    * This method constructs and sends the necessary data to the frontend
-    * to create a node.
     * 
     * @param node the X6Node object to be draw.
     */
@@ -453,11 +497,8 @@ public class AntvX6 extends Div {
 
     /**
     * Draws a visual representation of a text for a node in the graph.
-    *
-    * This method constructs and sends the necessary data to the frontend
-    * to create a text node.
     * 
-     * @param nodeText the X6NodeText object to be draw
+    * @param nodeText the X6NodeText object to be draw
     */
     public void drawText(X6NodeText nodeText) {
         JsonObject textData = new JsonObject();
@@ -538,24 +579,12 @@ public class AntvX6 extends Div {
     }
     
     /**
-    * Updates the label state of all nodes in the graph.
+    * Unselect a specified cell in the graph. (Make sure to add the Selection plugin first)
     *
-    * This method calls the JavaScript function `updateNodesLabelState()`,
-    * which updates the visibility or state of labels for all nodes in the
-    * graph.
+    * @param id id of the X6Cell to be unselect.
     */
-    public void updateNodesLabelState(){
-        getElement().callJsFunction("updateNodesLabelState");
-    }
-    
-    /**
-    * Updates the label color of all nodes in the graph.
-    *
-    * This method calls the JavaScript function `updateNodesLabelColor()`,
-    * which modifies the color of labels for all nodes in the graph. 
-    */
-    public void updateNodesLabelColor(){
-        getElement().callJsFunction("updateNodesLabelColor");
+    public void unselectCell(String id){
+        getElement().callJsFunction("unselectCell", id);
     }
     
     /*
@@ -703,6 +732,14 @@ public class AntvX6 extends Div {
         this.getElement().callJsFunction("setPositionAbsoluteParent", jsonArray.toString());
     }
     
+    public void updateNodesLabelState(){
+        getElement().callJsFunction("updateNodesLabelState");
+    }
+    
+    public void updateNodesLabelColor(){
+        getElement().callJsFunction("updateNodesLabelColor");
+    }
+    
     /*
     * End of  methods that will be deleted very soon and implemented in Java. 
     */
@@ -752,12 +789,12 @@ public class AntvX6 extends Div {
         getElement().callJsFunction("eventCellUnselect");
     }
 
-    public void initEventAddNodeTools() {
-        getElement().callJsFunction("eventAddNodeTools");
+    public void initEventAddNodeButtonRemove() {
+        getElement().callJsFunction("eventAddNodeButtonRemoveTool");
     }
 
-    public void initEventRemoveNodeTools() {
-        getElement().callJsFunction("eventRemoveNodeTools");
+    public void initEventRemoveNodeButtonRemoveTool() {
+        getElement().callJsFunction("eventRemoveNodeButtonRemoveTool");
     }
 
     public void initEventAddEdgeTools() {
@@ -904,6 +941,14 @@ public class AntvX6 extends Div {
 
     public void setTextNodes(List<X6NodeText> textNodes) {
         this.textNodes = textNodes;
+    }
+    
+    public X6Node getNodeById(String id) {
+        for (X6Node node : nodes) {
+            if (node.getId().equals(id))
+                return node; 
+        }
+        return null;
     }
     
     /*
@@ -1079,18 +1124,46 @@ public class AntvX6 extends Div {
     @DomEvent("node-changed")
     public static class NodeChangedEvent extends ComponentEvent<AntvX6> {
         private final String id;
+        private final double x;
+        private final double y;
+        private final double width;
+        private final double height;
         private final String newLabel;
 
         public NodeChangedEvent(AntvX6 source, boolean fromClient,
                                 @EventData("event.detail.node.id") String id,
+                                @EventData("event.detail.node.x") Double x,
+                                @EventData("event.detail.node.y") Double y,
+                                @EventData("event.detail.node.width") Double width,
+                                @EventData("event.detail.node.height") Double height,
                                 @EventData("event.detail.node.newLabel") String newLabel){
             super(source, fromClient);
             this.id = id;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
             this.newLabel = newLabel;
         }
         
         public String getId() {
             return id;
+        }
+
+        public double getX() {
+            return x;
+        }
+
+        public double getY() {
+            return y;
+        }
+
+        public double getWidth() {
+            return width;
+        }
+
+        public double getHeight() {
+            return height;
         }
         
         public String getNewLabel(){
@@ -1106,13 +1179,16 @@ public class AntvX6 extends Div {
     public static class CellSelectedEvent extends ComponentEvent<AntvX6> {
         private final String id;
         private final String cellType;
-
+        private final int numberCells;
+        
         public CellSelectedEvent(AntvX6 source, boolean fromClient,
-                                 @EventData("event.detail.cell.id") String id,
-                                 @EventData("event.detail.cell.cellType") String cellType) {
+                                @EventData("event.detail.cell.id") String id,
+                                @EventData("event.detail.cell.cellType") String cellType,
+                                @EventData("event.detail.cell.numberCells") int numberCells){
             super(source, fromClient);
             this.id = id;
             this.cellType = cellType;
+            this.numberCells = numberCells;
         }
 
         public String getId() {
@@ -1122,6 +1198,10 @@ public class AntvX6 extends Div {
         public String getCellType() {
             return cellType;
         }
+
+        public int getNumberCells() {
+            return numberCells;
+        }    
     }
     
     /**

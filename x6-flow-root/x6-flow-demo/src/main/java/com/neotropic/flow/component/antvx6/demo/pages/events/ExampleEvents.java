@@ -12,6 +12,7 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import java.util.UUID;
 
 /**
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
@@ -89,14 +90,12 @@ public class ExampleEvents extends VerticalLayout{
         AntvX6 basicCanvas = this.factory.getBasicCanvas(600, 600, X6Constants.GRAPH_BACKGROUND_COLOR);
 
         basicCanvas.addGraphCreatedListener(evt -> {
-            basicCanvas.initEventGetNodeNewPosition();
-
             //Add events to add and remove node tools
-            basicCanvas.initEventAddNodeTools();
-            basicCanvas.initEventRemoveNodeTools();
+            basicCanvas.initEventAddNodeButtonRemove();
+            basicCanvas.initEventRemoveNodeButtonRemoveTool();
             
             X6Node node = new X6Node();
-            node.setId("Node 1");
+            node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
             node.setLabelText("Hover over me");

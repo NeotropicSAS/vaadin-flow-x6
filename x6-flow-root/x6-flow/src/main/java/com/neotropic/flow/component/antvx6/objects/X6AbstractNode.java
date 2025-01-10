@@ -36,6 +36,7 @@ public abstract class X6AbstractNode extends X6Cell {
     public X6AbstractNode(){
         super();
         this.setCellType(X6Constants.CELL_NODE);
+        this.movable = true;
         this.labelStyles = new X6LabelStyles();
         this.nodeStyles = new X6NodeStyles();
     }

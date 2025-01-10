@@ -9,6 +9,7 @@ import com.neotropic.flow.component.antvx6.objects.Geometry;
 import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.neotropic.flow.component.antvx6.objects.X6NodeBackground;
 import com.neotropic.flow.component.antvx6.objects.X6NodeText;
+import com.neotropic.flow.component.antvx6.utilities.X6NodeTextUtilities;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -159,7 +160,7 @@ public class ExampleNodes extends VerticalLayout{
             //node text
             X6NodeText text = new X6NodeText();
             text.setId(UUID.randomUUID().toString());
-            text.setGeometry(new Geometry(0, 0, 250, 30));
+            text.setGeometry(new Geometry(0, 0, 0, 0));
             text.setShape(X6Constants.SHAPE_RECT);
             text.setLabelText("I'm the node text of the main node.");
             text.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_DEFAULT);
@@ -167,11 +168,15 @@ public class ExampleNodes extends VerticalLayout{
             text.setParentId(node.getId());
             text.setMovable(false);
             //position it below the node
-            text.setLabelPositionRelative("bottom");
+            text.setLabelPositionRelative(X6Constants.BOTTOM);
             text.getLabelStyles().setLabelTextColor("gray");
             text.getNodeStyles().setBorderRadius(8);
             text.getNodeStyles().setStrokeWidth(0);
             text.getNodeStyles().setFillColor("#DCD0FF");
+            
+            //Using utilities to create the dimensions and position of the NodeText
+            X6NodeTextUtilities.calculateLabelDimensions(text.getGeometry(), text.getLabelText(), text.getLabelStyles().getLabelFontSize());
+            X6NodeTextUtilities.calculateLabelPosition(node.getGeometry(), text.getGeometry(), text.getLabelPositionRelative(), 10);
             
             //Draw the node
             basicCanvas.drawNode(node);

@@ -98,10 +98,10 @@ public class MainView extends VerticalLayout {
     private void createUIComponentsExamples(){
         OrderedList UIComponents = new OrderedList();
 
-        Anchor tools = new Anchor("", "Tools");
+        Anchor tools = new Anchor("/UI/components/examples/tools", "Tools");
         tools.setTarget("_blank");
         
-        Anchor plugins = new Anchor("", "PLugins");
+        Anchor plugins = new Anchor("/UI/components/examples/plugins", "Plugins");
         plugins.setTarget("_blank");
         
         UIComponents.add(new ListItem(tools));

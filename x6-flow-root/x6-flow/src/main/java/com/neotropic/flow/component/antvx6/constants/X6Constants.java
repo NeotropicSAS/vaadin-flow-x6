@@ -20,6 +20,9 @@ package com.neotropic.flow.component.antvx6.constants;
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>
  */
 public class X6Constants {
+    /**
+    * 
+    */
     public static final int BASIC_GRAPH_TYPE = 0;
     
     public static final int INTERACTIONS_GRAPH_TYPE = 1;
@@ -163,15 +166,63 @@ public class X6Constants {
     * Represents whether the node should be visible
     */
     public static final String LABEL_NODE_VISIBLE = "visible";
+    
+    public static final String BOTTOM = "bottom";
+    
+    public static final String TOP = "top";
+    
+    /*
+    * Tool node editor
+    */
+    public static final String NODE_EDITOR = "node-editor";
    
+    /**
+    * Represents the border color of the element.
+    */
     public static final String STYLE_STROKECOLOR = "strokeColor";
+
+    /**
+     * Represents the fill color of the element.
+     */
     public static final String STYLE_FILLCOLOR = "fillColor";
+
+    /**
+     * Represents whether the border is dashed.
+     */
     public static final String STYLE_DASHED = "dashed";
+
+    /**
+     * Represents whether the corners are rounded.
+     */
     public static final String STYLE_ROUNDED = "rounded";
+
+    /**
+     * Represents the width of the border.
+     */
     public static final String STYLE_STROKEWIDTH = "strokeWidth";
+
+    /**
+     * Represents the font size of the text.
+     */
     public static final String STYLE_FONTSIZE = "fontSize";
+
+    /**
+     * Represents the font color of the text.
+     */
     public static final String STYLE_FONTCOLOR = "fontColor";
+
+    /**
+     * Represents the font family of the text.
+     */
     public static final String STYLE_FONTFAMILY = "fontFamily";
+
+    /**
+     * Represents the z-index of the element.
+     */
     public static final String STYLE_ZINDEX = "zIndex";
+
+    /**
+     * Represents no value or none.
+     */
     public static String NONE = "none";
 }

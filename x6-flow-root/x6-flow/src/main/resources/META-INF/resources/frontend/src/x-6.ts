@@ -785,16 +785,6 @@ export class X6 extends LitElement {
   */
   private graph: Graph | null = null;
 
-  /**
-  * The transform plugin instance.
-  */
-  private transformPlugin: Transform | null = null;
-
-  /**
-  * The scroller plugin instance.
-  */
-  private scrollerPlugin: Scroller | null = null;
-
   /*
   * A path that defines the location of a node style attribute in the X6 model.
   */
@@ -971,7 +961,7 @@ export class X6 extends LitElement {
     scrollerPositionTop: number
   ) {
     if (this.graph) {
-      this.scrollerPlugin = new Scroller({
+      const scrollerPlugin = new Scroller({
         enabled: enabled,
         pannable: pannable,
         pageVisible: pageVisible,
@@ -984,7 +974,7 @@ export class X6 extends LitElement {
         autoResize: autoResize
       });
   
-      this.graph.use(this.scrollerPlugin);
+      this.graph.use(scrollerPlugin);
       this.graph.setScrollbarPosition(scrollerPositionLeft, scrollerPositionTop);
     }
   }
@@ -1018,7 +1008,7 @@ export class X6 extends LitElement {
     resizingPreserveAspectRatio: boolean
   ) {
     if (this.graph) {
-      this.transformPlugin = new Transform({
+      const transformPlugin = new Transform({
         rotating: rotating,
         resizing: {
           enabled: resizingEnabled,
@@ -1029,7 +1019,7 @@ export class X6 extends LitElement {
         },
       });
   
-      this.graph.use(this.transformPlugin);
+      this.graph.use(transformPlugin);
     }
   }
 
@@ -1130,6 +1120,17 @@ export class X6 extends LitElement {
   * Methods for node selection functionalities
   */
 
+  public unselectCell(id: string){
+    if(this.graph){
+      const cell = this.graph.getCellById(id);
+      if(cell){
+        const selectionPlugin = this.graph.getPlugin('selection') as Selection;
+        if(selectionPlugin)
+          selectionPlugin.unselect(cell);
+      }
+    }
+  }
+
   /**
   * Selects a node in the graph and centers the view on it.
   * 
@@ -1157,25 +1158,21 @@ export class X6 extends LitElement {
       this.graph.on('cell:selected',({cell}) => {   
         const selectedCells = this.graph?.getSelectedCells();
         if(selectedCells){
-          if(selectedCells.length == 1){
-            if(cell.id !== this.graph_node_background_id){
-              let cellType = '';
-              if(cell.isNode())
-                cellType = 'node';
-              else
-                cellType = 'edge';
-    
-              this.dispatchEvent(new CustomEvent('cell-selected', {
-                detail: {
-                  cell: {
-                    id: cell.id,
-                    cellType: cellType,
-                  }
-                }
-              }));
-            }else
-              this.graph?.unselect(cell); // If the background node is selected, it unselects it.
-          }
+          let cellType = '';
+          if(cell.isNode())
+            cellType = 'node';
+          else
+            cellType = 'edge';
+
+          this.dispatchEvent(new CustomEvent('cell-selected', {
+            detail: {
+              cell: {
+                id: cell.id,
+                cellType: cellType,
+                numberCells: selectedCells.length
+              }
+            }
+          }));
         }
       })
     }
@@ -1294,7 +1291,7 @@ export class X6 extends LitElement {
     }
   }
 
-    /**
+  /**
   * Draws a text node in the graph using the specified properties.
   * 
   * @param {string} nodeData - OBJ in json format.
@@ -1303,14 +1300,13 @@ export class X6 extends LitElement {
       if(this.graph){
         const nodeText = JSON.parse(nodeData) as X6NodeText;
         const labelDefaultPosition = this.getNodeLabelConfiguration(nodeText);
-        let position = this.calculateLabelPosition(nodeText);
 
         this.graph.addNode({
           id: nodeText.id,
           width: nodeText.geometry.dimensions.width,
           height: nodeText.geometry.dimensions.height,
-          x: position.x,
-          y: position.y,
+          x: nodeText.geometry.coordinates.x,
+          y: nodeText.geometry.coordinates.y,
           shape: nodeText.shape,
           data: { enableMove: nodeText.movable },
           attrs: {
@@ -1335,7 +1331,6 @@ export class X6 extends LitElement {
   public drawBasicEdge(edgeData: string) {
     if (this.graph) {
       const edge = JSON.parse(edgeData) as X6EdgeBasic;
-
       const edgeConnector = this.getEdgeConnector(edge);
 
       const newEdge = this.graph.addEdge({
@@ -1357,7 +1352,6 @@ export class X6 extends LitElement {
 
       if (Array.isArray(edge.vertices) && edge.vertices.length > 0) 
           newEdge.setVertices(this.getVerticesFormat(edge.vertices));
-        
     }
   }
 
@@ -1487,42 +1481,6 @@ export class X6 extends LitElement {
 
     return nodePort;
   }
-
-  /**
-  * Calculates the position of a label for a text node that serves as a label for its parent node.
-  * 
-  * @param nodeText - The text node representing the label, which is a child of a parent node.
-  * @returns An object containing the calculated x and y coordinates for the label position 
-  * relative to the parent node.
-  */
-  private calculateLabelPosition(nodeText: X6NodeText) {
-    let positionX = nodeText.geometry.coordinates.x;
-    let positionY = nodeText.geometry.coordinates.y;
-
-    if (this.graph) {
-        const parent = this.graph.getCellById(nodeText.parentId);
-        if (parent) {
-            const parentBBox = parent.getBBox();
-            const xCenterTop = parentBBox.x + (parentBBox.width / 2);
-
-            if (nodeText.labelPositionRelative) {
-                if (nodeText.labelPositionRelative === 'top') {
-                    positionX = xCenterTop - (nodeText.geometry.dimensions.width / 2);
-                    positionY = parentBBox.y - 10;
-                }
-
-                if (nodeText.labelPositionRelative === 'bottom') {
-                    positionX = xCenterTop - (nodeText.geometry.dimensions.width / 2);
-                    positionY = parentBBox.y + parentBBox.height + 10;
-                }
-            }
-        }
-    }
-
-    return { x: positionX, y: positionY };
-}
-
-  
 
   /**
   * This method retrieves the label configuration for an edge in the X6 graph.
@@ -1758,7 +1716,7 @@ export class X6 extends LitElement {
   * This method listens for the 'mouseenter' event on nodes.
   * When the mouse enters a node, it adds a remove button tool.
   */
-  public eventAddNodeTools(){
+  public eventAddNodeButtonRemoveTool(){
     if(this.graph){
       this.graph.on('node:mouseenter', ({ node }) => {
         node.addTools([
@@ -1775,9 +1733,9 @@ export class X6 extends LitElement {
 
   /**
   * This method listens for the 'mouseleave' event on nodes.
-  * When the mouse leaves a node, it removes the 'boundary' and 'button-remove' tools from the node.
+  * When the mouse leaves a node, it removes 'button-remove' tool from the node.
   */
-  public eventRemoveNodeTools(){
+  public eventRemoveNodeButtonRemoveTool(){
     if(this.graph){
       this.graph.on('node:mouseleave', ({ node }) => {
         node.removeTool('button-remove');
@@ -1787,6 +1745,10 @@ export class X6 extends LitElement {
 
   /*
   * End of methods to configure x6-tools
+  */
+
+  /*
+  * Events
   */
 
   /**
@@ -1836,6 +1798,105 @@ export class X6 extends LitElement {
   }
 
   /**
+  * Sets up an event listener for when an edge is connected in the graph.
+  * 
+  * When an edge is connected, it sets the attributes for the edge.
+  * dispatches a custom event with details about the newly created edge.
+  */
+  public eventNodesConnected(){
+    if(this.graph){
+      this.graph.on('edge:connected', ({ edge }) => {
+        if(edge.getSourceCell() != null && edge.getTargetCell != null){
+          this.dispatchEvent(new CustomEvent('edge-created', {
+            detail: {
+              edge: {
+                id: edge.id,
+                idSource: edge.getSourceCell()?.id,
+                idTarget: edge.getTargetCell()?.id,
+              }
+            }
+          }));
+
+          this.graph?.removeEdge(edge);
+        }
+      });
+    }
+  }
+
+
+  public eventNodeChanged(){
+    if(this.graph){
+      this.graph.on('node:changed', ({ node }) => {
+        this.dispatchEvent(new CustomEvent('node-changed', {
+          detail: {
+            node: {
+              id: node.id,
+              x: node.getBBox().x,
+              y: node.getBBox().y,
+              width: node.getBBox().width,
+              height: node.getBBox().height,
+              newLabel:node.getAttrByPath('label/text')
+            }
+          }
+        }));
+      });
+    }  
+  }
+
+  public eventResizeNode(){
+    if(this.graph){
+      this.graph.on('node:dblclick', ({node}) => {
+        if(node.shape != "image"){
+          const transformPlugin = this.graph?.getPlugin('transform') as Transform;
+          transformPlugin.createWidget(node);
+        }
+      });
+    }
+  }
+
+  /**
+  * Sets up an event listener for double-click events on the background node.
+  * 
+  * When the background node is double-clicked, it triggers the creation of a 
+  * resizing widget for that background node using the transform plugin.
+  */
+  public eventResizeNodeBackgroundDblClick(){
+    if(this.graph){
+      this.graph.on('node:dblclick', ({node}) => {
+        if(node.id === this.graph_node_background_id){
+          const transformPlugin = this.graph?.getPlugin('transform') as Transform;
+          transformPlugin.createWidget(node);
+        }
+      });
+    }
+  }
+
+  public eventContextMenu() {
+    if (this.graph) {
+      this.graph.on('cell:contextmenu', (e) => {
+  
+        const x = e.e.clientX;  
+        const y = e.e.clientY; 
+
+        this.contextMenu.style.left = `${x}px`;
+        this.contextMenu.style.top = `${y}px`;
+
+        this.contextMenu.style.display = 'block';
+        this.contextMenu.setAttribute('data-cell-id', e.cell.id);
+      });
+    }
+  }
+
+  /*
+  * End of events
+  */
+
+
+  /*
+  * Other methods
+  */
+
+  /**
   * Removes the background node from the graph.
   * 
   * This method checks if a background node ID is set and removes the 
@@ -1874,6 +1935,147 @@ export class X6 extends LitElement {
     }
   }
 
+  /**
+  * Creates a ghost( It's a non-visible and non-manipulable node) to manage the center of the canvas.
+  * This node acts as a reference point for positioning the Scroller's bars of the graph.
+  */
+  public createGhost(){
+    if(this.graph){
+      const center = this.graph.addNode({
+        x: this.graph_width/2,
+        y: this.graph_height/2,
+        width: 32,
+        height: 32,
+        shape: 'rect',
+        visible: false,
+      });
+
+      this.centerGraph(center.id);
+    }
+  }  
+
+  public activateContextMenu(){
+    this.addEventListener('click', (e: Event) => {
+      if (!this.contextMenu.contains(e.target as HTMLElement)) {
+        this.contextMenu.style.display = 'none';
+      }
+    });
+  }
+  
+  /**
+  * Exports the current graph as a JPEG image.
+  * 
+  * This method generates a JPEG file of the graph with specified dimensions, 
+  * background color, quality, and padding. The exported file will be named 
+  * according to the provided filename.
+  * 
+  * @param {string} fileName - The name of the file to which the graph will be exported (without extension).
+  */
+  public exportGraphToJPEG(fileName: string){
+    if(this.graph){
+      this.graph.exportJPEG(fileName + '.jpeg', {
+        width: 1920, 
+        height: 1080,
+        backgroundColor: this.graph_background_color,
+        quality: 1, 
+        padding: this.padding_export_graph_JPEG,
+
+      });
+    }
+  }
+
+  public configureZIndexControls(){
+    this.bringToFrontBtn.addEventListener('click', () => this.bringToFront());
+    this.sendToBackBtn.addEventListener('click', () => this.sendToBack());
+    this.moveUpBtn .addEventListener('click', () => this.moveUpOneLevel());
+    this.moveDownBtn.addEventListener('click', () => this.moveDownOneLevel());
+  }
+
+  public bringToFront(){
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      let nextLevel = this.graph.getCellCount();
+      cell.setProp('zIndex', nextLevel);
+
+      this.dispatchEvent(new CustomEvent('bring-to-front', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none';  
+  }
+
+  public moveUpOneLevel() {
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      let currentZIndex = cell.getProp('zIndex')
+      if(currentZIndex)
+        cell.setProp('zIndex', currentZIndex+=1);
+      
+      this.dispatchEvent(new CustomEvent('bring-to-front', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none';  
+  }
+
+  public sendToBack(){
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      cell.setProp('zIndex', 1);
+
+      this.dispatchEvent(new CustomEvent('send-to-back', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none'; 
+  }
+  
+  public moveDownOneLevel() {
+    const cellId = this.contextMenu.getAttribute('data-cell-id')
+    if(this.graph && cellId){
+      const cell = this.graph.getCellById(cellId);
+      let currentZIndex = cell.getProp('zIndex')
+      if(currentZIndex && currentZIndex > 1)
+        cell.setProp('zIndex', currentZIndex-=1);
+
+      this.dispatchEvent(new CustomEvent('send-to-back', {
+        detail: {
+          cell: {
+            id: cell.id,
+            zIndex: cell.getProp('zIndex')
+          }
+        }
+      }));
+    }
+    this.contextMenu.style.display = 'none'; 
+  }
+
+  /*
+  * End of other methods
+  */
+
+ /*
+ * These methods will be deleted very soon and implemented in Java, because they cover business rules that are not necessary or of interest. 
+ */
+
   public establishHierarchyThroughEdges() {
     if (this.graph) {
         const edges = this.graph.getEdges();
@@ -1893,15 +2095,6 @@ export class X6 extends LitElement {
     }
   }
 
-  /**
-  * Adjusts the dimensions of a node based on its children,
-  * assuming the children will be arranged horizontally.
-  * 
-  * This method calculates the total width required for the node based on the
-  * widths of its child nodes and adjusts the node's size accordingly.
-  *
-  * @param id - The unique identifier of the node whose dimensions are to be adjusted.
-  */
   public adjustNodeWidth(id: string, reserveSpace: number, childSpacing: number, heightIncrease: number){
     if (this.graph) {
       const currentNode = this.graph.getCellById(id);
@@ -2149,15 +2342,6 @@ export class X6 extends LitElement {
     return maxHeight;
   }
 
-  /**
-  * Centers the children of a specified node horizontally within the parent node.
-  * 
-  * This method adjusts the positions of the child nodes so that they are evenly
-  * distributed along the vertical center of the parent node. Each child is positioned
-  * with a fixed horizontal offset.
-  *
-  * @param id - The unique identifier of the parent node whose children will be centered.
-  */
   public centerChildrenHorizontally(id: string, startX: number, childSpacing: number){
     if (this.graph) {
       const currentNode = this.graph.getCellById(id);
@@ -2213,15 +2397,6 @@ export class X6 extends LitElement {
     } 
   }
 
-  /**
-  * Sets the absolute positions of parent nodes based on their widths.
-  * 
-  * This method positions parent nodes, which may have multiple children, 
-  * starting from a specified horizontal offset. Each parent node is placed
-  * at a calculated position based on the width of the previous parent.
-  *
-  * @param parentsId - A JSON string containing the unique identifiers of the parent nodes to be positioned.
-  */
   public setPositionAbsoluteParent(parentsId: string){
     if(this.graph){
        const parsedIds = JSON.parse(parentsId); 
@@ -2236,61 +2411,11 @@ export class X6 extends LitElement {
     }
   }
 
-  /**
-  * Sets up an event listener for when an edge is connected in the graph.
-  * 
-  * When an edge is connected, it sets the attributes for the edge.
-  * dispatches a custom event with details about the newly created edge.
-  */
-  public eventNodesConnected(){
-    if(this.graph){
-      this.graph.on('edge:connected', ({ edge }) => {
-        if(edge.getSourceCell() != null && edge.getTargetCell != null){
-          this.dispatchEvent(new CustomEvent('edge-created', {
-            detail: {
-              edge: {
-                id: edge.id,
-                idSource: edge.getSourceCell()?.id,
-                idTarget: edge.getTargetCell()?.id,
-              }
-            }
-          }));
-
-          this.graph?.removeEdge(edge);
-        }
-      });
-    }
-  }
-
-
-  public eventNodeChanged(){
-    if(this.graph){
-      this.graph.on('node:changed', ({ node }) => {
-        this.dispatchEvent(new CustomEvent('node-changed', {
-          detail: {
-            node: {
-              id: node.id,
-              newLabel:node.getAttrByPath('label/text')
-            }
-          }
-        }));
-      });
-    }  
-  }
-
-  /**
-  * Toggles the state of the node label visibility property.
-  */
+  
   public setNodeLabelStateProperty(){
     this.nodes_label_state = !this.nodes_label_state;
   }
 
-  /**
-  * Updates the visibility state of the labels for all nodes in the graph.
-  * 
-  * If the current label state is true, it hides the labels of all nodes; 
-  * otherwise, it makes the labels visible.
-  */
   public updateNodesLabelState(){
     if(this.graph){
       let nodes = this.graph.getNodes();
@@ -2318,20 +2443,10 @@ export class X6 extends LitElement {
     }
   }
 
-  /**
-  * Toggles the state of the node label color property.
-  */
   public setNodesLabelColorProperty(){
     this.nodes_label_color_toggle = !this.nodes_label_color_toggle;
   }
 
-  /**
-  * Updates the color and appearance of the labels for all nodes in the graph.
-  * 
-  * If the color toggle state is false, it sets the label fill color to black 
-  * and applies an outline effect using the specified background color. If the 
-  * toggle state is true, it resets the label appearance to remove the outline.
-  */
   public updateNodesLabelColor(){
     if(this.graph){
       let nodes = this.graph.getNodes();
@@ -2370,180 +2485,9 @@ export class X6 extends LitElement {
     }
   }
 
-  public eventResizeNode(){
-    if(this.graph){
-      this.graph.on('node:dblclick', ({node}) => {
-        if(this.transformPlugin && node.shape != "image")
-          this.transformPlugin.createWidget(node); 
-      });
-    }
-  }
-
-  /**
-  * Sets up an event listener for double-click events on the background node.
-  * 
-  * When the background node is double-clicked, it triggers the creation of a 
-  * resizing widget for that background node using the transform plugin.
+  /*
+  * End of  methods that will be deleted very soon and implemented in Java. 
   */
-  public eventResizeNodeBackgroundDblClick(){
-    if(this.graph){
-      this.graph.on('node:dblclick', ({node}) => {
-        if(node.id === this.graph_node_background_id)
-          this.transformPlugin?.createWidget(node); // Create resizing widget
-      });
-    }
-  }
-
-  /**
-  * Creates a ghost( It's a non-visible and non-manipulable node) to manage the center of the canvas.
-  * This node acts as a reference point for positioning the Scroller's bars of the graph.
-  */
-  public createGhost(){
-    if(this.graph){
-      const center = this.graph.addNode({
-        x: this.graph_width/2,
-        y: this.graph_height/2,
-        width: 32,
-        height: 32,
-        shape: 'rect',
-        visible: false,
-      });
-
-      this.centerGraph(center.id);
-    }
-  }  
-
-  public activateContextMenu(){
-    this.addEventListener('click', (e: Event) => {
-      if (!this.contextMenu.contains(e.target as HTMLElement)) {
-        this.contextMenu.style.display = 'none';
-      }
-    });
-  }
-  
-  /**
-  * Exports the current graph as a JPEG image.
-  * 
-  * This method generates a JPEG file of the graph with specified dimensions, 
-  * background color, quality, and padding. The exported file will be named 
-  * according to the provided filename.
-  * 
-  * @param {string} fileName - The name of the file to which the graph will be exported (without extension).
-  */
-  public exportGraphToJPEG(fileName: string){
-    if(this.graph){
-      this.graph.exportJPEG(fileName + '.jpeg', {
-        width: 1920, 
-        height: 1080,
-        backgroundColor: this.graph_background_color,
-        quality: 1, 
-        padding: this.padding_export_graph_JPEG,
-
-      });
-    }
-  }
-
-  public eventContextMenu() {
-    if (this.graph) {
-      this.graph.on('cell:contextmenu', (e) => {
-  
-        const x = e.e.clientX;  
-        const y = e.e.clientY; 
-
-        this.contextMenu.style.left = `${x}px`;
-        this.contextMenu.style.top = `${y}px`;
-
-        this.contextMenu.style.display = 'block';
-        this.contextMenu.setAttribute('data-cell-id', e.cell.id);
-      });
-    }
-  }
-  
-
-  public configureZIndexControls(){
-    this.bringToFrontBtn.addEventListener('click', () => this.bringToFront());
-    this.sendToBackBtn.addEventListener('click', () => this.sendToBack());
-    this.moveUpBtn .addEventListener('click', () => this.moveUpOneLevel());
-    this.moveDownBtn.addEventListener('click', () => this.moveDownOneLevel());
-  }
-
-  public bringToFront(){
-    const cellId = this.contextMenu.getAttribute('data-cell-id')
-    if(this.graph && cellId){
-      const cell = this.graph.getCellById(cellId);
-      let nextLevel = this.graph.getCellCount();
-      cell.setProp('zIndex', nextLevel);
-
-      this.dispatchEvent(new CustomEvent('bring-to-front', {
-        detail: {
-          cell: {
-            id: cell.id,
-            zIndex: cell.getProp('zIndex')
-          }
-        }
-      }));
-    }
-    this.contextMenu.style.display = 'none';  
-  }
-
-  public moveUpOneLevel() {
-    const cellId = this.contextMenu.getAttribute('data-cell-id')
-    if(this.graph && cellId){
-      const cell = this.graph.getCellById(cellId);
-      let currentZIndex = cell.getProp('zIndex')
-      if(currentZIndex)
-        cell.setProp('zIndex', currentZIndex+=1);
-      
-      this.dispatchEvent(new CustomEvent('bring-to-front', {
-        detail: {
-          cell: {
-            id: cell.id,
-            zIndex: cell.getProp('zIndex')
-          }
-        }
-      }));
-    }
-    this.contextMenu.style.display = 'none';  
-  }
-
-  public sendToBack(){
-    const cellId = this.contextMenu.getAttribute('data-cell-id')
-    if(this.graph && cellId){
-      const cell = this.graph.getCellById(cellId);
-      cell.setProp('zIndex', 1);
-
-      this.dispatchEvent(new CustomEvent('send-to-back', {
-        detail: {
-          cell: {
-            id: cell.id,
-            zIndex: cell.getProp('zIndex')
-          }
-        }
-      }));
-    }
-    this.contextMenu.style.display = 'none'; 
-  }
-  
-  public moveDownOneLevel() {
-    const cellId = this.contextMenu.getAttribute('data-cell-id')
-    if(this.graph && cellId){
-      const cell = this.graph.getCellById(cellId);
-      let currentZIndex = cell.getProp('zIndex')
-      if(currentZIndex && currentZIndex > 1)
-        cell.setProp('zIndex', currentZIndex-=1);
-
-      this.dispatchEvent(new CustomEvent('send-to-back', {
-        detail: {
-          cell: {
-            id: cell.id,
-            zIndex: cell.getProp('zIndex')
-          }
-        }
-      }));
-    }
-    this.contextMenu.style.display = 'none'; 
-
-  }
 
   protected render(): unknown {
     return html`
@@ -2565,8 +2509,6 @@ export class X6 extends LitElement {
       ` : ''}
     `;
   }
-  
-
 }
 
 declare global {
