@@ -116,7 +116,7 @@ public class ExamplesTools extends VerticalLayout{
 
         basicCanvas.addGraphCreatedListener(evt -> {
             //Add events to vertices and segments
-            basicCanvas.initEventAddEdgeTools();
+            basicCanvas.initEventAddEdgeVerticesTool();
             basicCanvas.initEventRemoveEdgeTools();
             
             X6Node source = new X6Node();

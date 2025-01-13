@@ -797,8 +797,12 @@ public class AntvX6 extends Div {
         getElement().callJsFunction("eventRemoveNodeButtonRemoveTool");
     }
 
-    public void initEventAddEdgeTools() {
-        getElement().callJsFunction("eventAddEdgeTools");
+    public void initEventAddEdgeVerticesTool() {
+        getElement().callJsFunction("eventAddEdgeVerticesTool");
+    }
+    
+    public void initEventAddEdgeButtonRemoveTool(){
+        getElement().callJsFunction("eventAddEdgeButtonRemoveTool");
     }
 
     public void initEventRemoveEdgeTools() {
@@ -807,6 +811,18 @@ public class AntvX6 extends Div {
     
     public void activateContextMenu(){
         getElement().callJsFunction("activateContextMenu");
+    }
+    
+    public void initEventEdgeDblclick(){
+        getElement().callJsFunction("eventDblClickEdge");
+    }
+    
+    public void initEventEdgeChanged(){
+        getElement().callJsFunction("eventEdgeChanged");
+    }
+    
+    public void initEventCellRemoved(){
+        getElement().callJsFunction("eventCellRemoved");
     }
 
     /*
@@ -895,6 +911,18 @@ public class AntvX6 extends Div {
         return addListener(CellUnselectedEvent.class, listener);
     }
     
+    public Registration addEdgeDblClickListener(ComponentEventListener<EdgeDblClickEvent> listener) {
+        return addListener(EdgeDblClickEvent.class, listener);
+    }
+    
+    public Registration addEdgeChangedListener(ComponentEventListener<EdgeChangedEvent> listener) {
+        return addListener(EdgeChangedEvent.class, listener);
+    }
+    
+    public Registration addCellRemovedListener(ComponentEventListener<CellRemovedEvent> listener) {
+        return addListener(CellRemovedEvent.class, listener);
+    }
+
     /*
     * End of Listeners
     */
@@ -947,6 +975,14 @@ public class AntvX6 extends Div {
         for (X6Node node : nodes) {
             if (node.getId().equals(id))
                 return node; 
+        }
+        return null;
+    }
+    
+    public X6EdgeBasic getEdgeById(String id){
+        for(X6EdgeBasic edge: edges){
+            if(edge.getId().equals(id))
+                return edge;
         }
         return null;
     }
@@ -1171,7 +1207,66 @@ public class AntvX6 extends Div {
         }
     }
     
-    
+    @DomEvent("edge-changed")
+    public static class EdgeChangedEvent extends ComponentEvent<AntvX6> {
+        private final String id;
+        private final String idSource;
+        private final String idTarget;
+        private final String label;
+        private final String verticesJson; 
+
+        public EdgeChangedEvent(AntvX6 source, boolean fromClient,
+                                @EventData("event.detail.edge.id") String id,
+                                @EventData("event.detail.edge.idSource") String idSource,
+                                @EventData("event.detail.edge.idTarget") String idTarget,
+                                @EventData("event.detail.edge.label") String label,
+                                @EventData("event.detail.edge.vertices") String verticesJson) {
+            super(source, fromClient);
+            this.id = id;
+            this.idSource = idSource;
+            this.idTarget = idTarget;
+            this.label = label;
+            this.verticesJson = verticesJson; 
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getIdSource() {
+            return idSource;
+        }
+
+        public String getIdTarget() {
+            return idTarget;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getVerticesJson() {
+            return verticesJson; 
+        }
+    }
+
+
+    @DomEvent("edge-dblclick")
+    public static class EdgeDblClickEvent extends ComponentEvent<AntvX6> {
+        private final String edgeId;
+
+        public EdgeDblClickEvent(AntvX6 source, boolean fromClient,
+                                 @EventData("event.detail.edge.id") String edgeId) {
+            super(source, fromClient);
+            this.edgeId = edgeId;
+        }
+
+        public String getEdgeId() {
+            return edgeId;
+        }
+    }
+
+
     /**
     * Event fired when a cell(node or edge) has been selected.
     */
@@ -1228,6 +1323,29 @@ public class AntvX6 extends Div {
             return state;
         }
     }
+    
+    @DomEvent("cell-removed")
+    public static class CellRemovedEvent extends ComponentEvent<AntvX6> {
+        private final String id;
+        private final String typeCell;
+
+        public CellRemovedEvent(AntvX6 source, boolean fromClient,
+                                @EventData("event.detail.cell.id") String id,
+                                @EventData("event.detail.cell.typeCell") String typeCell) {
+            super(source, fromClient);
+            this.id = id;
+            this.typeCell = typeCell;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getTypeCell() {
+            return typeCell;
+        }
+    }
+
   
     /**
     * Event fired when a edge has been created.

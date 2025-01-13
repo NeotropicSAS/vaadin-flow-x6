@@ -1692,10 +1692,26 @@ export class X6 extends LitElement {
   * This method listens for the 'mouseenter' event on edges.
   * When the mouse enters an edge, it adds the 'vertices' and 'segments' tools to that edge.
   */
-  public eventAddEdgeTools(){
+  public eventAddEdgeVerticesTool(){
     if(this.graph){
       this.graph.on('edge:mouseenter',({ edge })=>{   
         edge.addTools(['vertices','segments']) 
+      })
+    }
+  }
+
+  public eventAddEdgeButtonRemoveTool(){
+    if(this.graph){
+      this.graph.on('edge:mouseenter',({ edge })=>{   
+        edge.addTools({
+          name: 'button-remove',
+          args: { distance: 40 },
+        })
+  
+        edge.addTools({
+          name: 'button-remove',
+          args: { distance: -40 },
+        })
       })
     }
   }
@@ -1775,6 +1791,63 @@ export class X6 extends LitElement {
     }
   }
 
+  public eventCellRemoved(){
+    if(this.graph){
+      this.graph.on('cell:removed', ({ cell }) => {
+        let typeCell = 'edge';
+        if(cell.isNode())
+          typeCell = 'node'
+        this.dispatchEvent(new CustomEvent('cell-removed', {
+          detail: {
+            cell: {
+              id: cell.id,
+              typeCell: typeCell
+            }
+          }
+        }));
+      });
+    }
+  }
+
+  public eventDblClickEdge(){
+    if(this.graph){
+      this.graph.on('edge:dblclick', ({edge}) => {
+        this.dispatchEvent(new CustomEvent('edge-dblclick', {
+          detail: {
+            edge: {
+              id: edge.id,
+            }
+          }
+        }));
+      });
+    }
+  }
+
+  public eventEdgeChanged() {
+    if (this.graph) {
+      this.graph.on('edge:changed', ({ edge }) => {
+        const vertices = edge.getVertices().map(vertex => ({
+          x: vertex.x,
+          y: vertex.y
+        }));
+  
+        const verticesJson = JSON.stringify(vertices);
+  
+        this.dispatchEvent(new CustomEvent('edge-changed', {
+          detail: {
+            edge: {
+              id: edge.id,
+              idSource: edge.getSourceCell()?.id,
+              idTarget: edge.getTargetCell()?.id,
+              label: edge.getLabelAt(0),
+              vertices: verticesJson
+            }
+          }
+        }));
+      });
+    }
+  }
+  
   /**
   * Sets up an event listener for when a node is moved in the graph.
   * 

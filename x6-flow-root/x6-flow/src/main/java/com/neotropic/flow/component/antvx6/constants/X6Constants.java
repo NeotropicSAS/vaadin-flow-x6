@@ -76,16 +76,6 @@ public class X6Constants {
     * The height of the graph in pixels for physical tree view.
     */
     public static final int GRAPH_HEIGHT_PHYSICAL_TREE = 500;
-    
-     /**
-    * The width of the graph in pixels for physical tree view.
-    */
-    public static final int GRAPH_WIDTH_TOPOLOGY_VIEW = 1500;
-
-    /**
-    * The height of the graph in pixels for physical tree view.
-    */
-    public static final int GRAPH_HEIGHT_TOPOLOGY_VIEW = 800;
 
     /**
     * The background color of the graph.

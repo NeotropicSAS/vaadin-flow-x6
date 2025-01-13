@@ -2,6 +2,7 @@ com/neotropic/flow/component/antvx6/objects/X6EdgeMultipleLabels.class
 com/neotropic/flow/component/antvx6/objects/Coordinate.class
 com/neotropic/flow/component/antvx6/AntvX6$GraphCreatedEvent.class
 com/neotropic/flow/component/antvx6/objects/Dimension.class
+com/neotropic/flow/component/antvx6/AntvX6$CellRemovedEvent.class
 com/neotropic/flow/component/antvx6/objects/X6Cell.class
 com/neotropic/flow/component/antvx6/constants/X6Constants.class
 com/neotropic/flow/component/antvx6/objects/X6NodeBackground.class
@@ -9,10 +10,12 @@ com/neotropic/flow/component/antvx6/objects/X6AbstractNode.class
 com/neotropic/flow/component/antvx6/utilities/X6NodeTextUtilities.class
 com/neotropic/flow/component/antvx6/AntvX6$CellUnselectedEvent.class
 com/neotropic/flow/component/antvx6/AntvX6$GraphCleanedEvent.class
+com/neotropic/flow/component/antvx6/AntvX6$EdgeDblClickEvent.class
 com/neotropic/flow/component/antvx6/styles/X6EdgeStyles.class
 com/neotropic/flow/component/antvx6/AntvX6$NodeChangedEvent.class
 com/neotropic/flow/component/antvx6/objects/Vertex.class
 com/neotropic/flow/component/antvx6/objects/Geometry.class
+com/neotropic/flow/component/antvx6/AntvX6$EdgeChangedEvent.class
 com/neotropic/flow/component/antvx6/AntvX6$CellSelectedEvent.class
 com/neotropic/flow/component/antvx6/objects/X6NodeText.class
 com/neotropic/flow/component/antvx6/styles/X6NodeStyles.class
@@ -24,6 +27,7 @@ com/neotropic/flow/component/antvx6/AntvX6$BringToFrontEvent.class
 com/neotropic/flow/component/antvx6/AntvX6$NodeBackgroundResizedEvent.class
 com/neotropic/flow/component/antvx6/objects/X6Edge.class
 com/neotropic/flow/component/antvx6/objects/X6EdgeBasic.class
+com/neotropic/flow/component/antvx6/utilities/X6EdgeUtilities.class
 com/neotropic/flow/component/antvx6/AntvX6$GraphRefresheddEvent.class
 com/neotropic/flow/component/antvx6/AntvX6$SendToBackEvent.class
 com/neotropic/flow/component/antvx6/AntvX6.class

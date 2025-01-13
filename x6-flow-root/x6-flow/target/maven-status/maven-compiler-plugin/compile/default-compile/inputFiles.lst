@@ -10,6 +10,7 @@
 /home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/objects/Geometry.java
 /home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/objects/Vertex.java
 /home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/styles/X6EdgeStyles.java
+/home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/utilities/X6EdgeUtilities.java
 /home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/styles/X6LabelStyles.java
 /home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/objects/Coordinate.java
 /home/jcamacho/Desktop/Kuwaiba-Github/vaadin-flow-x6/x6-flow-root/x6-flow/src/main/java/com/neotropic/flow/component/antvx6/objects/Dimension.java
