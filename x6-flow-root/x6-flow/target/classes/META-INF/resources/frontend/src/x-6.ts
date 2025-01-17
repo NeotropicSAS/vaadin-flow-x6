@@ -1809,19 +1809,22 @@ export class X6 extends LitElement {
     }
   }
 
-  public eventDblClickEdge(){
-    if(this.graph){
-      this.graph.on('edge:dblclick', ({edge}) => {
+  public eventDblClickEdge() {
+    if (this.graph) {
+      this.graph.on('edge:dblclick', ({ edge }) => {
         this.dispatchEvent(new CustomEvent('edge-dblclick', {
           detail: {
             edge: {
               id: edge.id,
+              idSource: edge.getSourceCell()?.id,
+              idTarget: edge.getTargetCell()?.id,
             }
           }
         }));
       });
     }
   }
+  
 
   public eventEdgeChanged() {
     if (this.graph) {
@@ -1839,7 +1842,6 @@ export class X6 extends LitElement {
               id: edge.id,
               idSource: edge.getSourceCell()?.id,
               idTarget: edge.getTargetCell()?.id,
-              label: edge.getLabelAt(0),
               vertices: verticesJson
             }
           }
@@ -1984,6 +1986,13 @@ export class X6 extends LitElement {
           this.graph.removeCell(node);
       }
     }
+  }
+
+  public removeCell(id: string){
+    if(this.graph){
+      const cell = this.graph.getCellById(id);
+      this.graph.removeCell(cell);
+    } 
   }
 
   /**

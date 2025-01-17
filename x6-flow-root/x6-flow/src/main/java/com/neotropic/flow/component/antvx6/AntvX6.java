@@ -82,9 +82,13 @@ public class AntvX6 extends Div {
     */
     private List<X6NodeText> textNodes;
     /*
+    * List of basic edges present in the graph.
+    */
+    private List<X6EdgeBasic> basicEdges;
+    /*
     * List of edges present in the graph.
     */
-    private List<X6EdgeBasic> edges;
+    private List<X6Edge> edges;
     /*
     * List of listeners.
     */
@@ -94,6 +98,7 @@ public class AntvX6 extends Div {
         this.nodeBackground = new X6NodeBackground();
         this.nodes = new ArrayList();
         this.textNodes = new ArrayList();
+        this.basicEdges = new ArrayList<>();
         this.edges = new ArrayList();
         this.lstListeners = new ArrayList();
     }      
@@ -256,6 +261,32 @@ public class AntvX6 extends Div {
         getElement().callJsFunction("cleanGraph");
     }
     
+    public void removeCell(String id){
+        removeX6Cell(id);
+        getElement().callJsFunction("removeCell", id);
+    }
+    
+    public boolean removeX6Cell(String id) {
+        return removeX6Node(id) || removeX6NodeText(id) || removeX6Edge(id) || removeX6EdgeBasic(id);
+    }
+
+    public boolean removeX6Node(String id) {
+        return nodes.removeIf(node -> node.getId().equals(id));
+    }
+
+    public boolean removeX6NodeText(String id) {
+        return textNodes.removeIf(text -> text.getId().equals(id));
+    }
+
+    public boolean removeX6Edge(String id) {
+        return edges.removeIf(edge -> edge.getId().equals(id));
+    }
+
+    public boolean removeX6EdgeBasic(String id) {
+        return basicEdges.removeIf(edge -> edge.getId().equals(id));
+    }
+
+
     /**
     * Refreshes the graph.
     * 
@@ -668,7 +699,7 @@ public class AntvX6 extends Div {
             "drawBasicEdge", edgeData.toString() 
         );
 
-        this.edges.add(edge);
+        this.basicEdges.add(edge);
     }
     
     /**
@@ -955,14 +986,22 @@ public class AntvX6 extends Div {
         this.nodes = nodes;
     }
     
-    public List<X6EdgeBasic> getEdges() {
+    public List<X6Edge> getEdges() {
         return edges;
     }
 
-    public void setEdges(List<X6EdgeBasic> edges) {
+    public void setEdges(List<X6Edge> edges) {
         this.edges = edges;
     }
 
+    public List<X6EdgeBasic> getBasicEdges() {
+        return basicEdges;
+    }
+
+    public void setBasicEdges(List<X6EdgeBasic> basicEdges) {
+        this.basicEdges = basicEdges;
+    }
+    
     public List<X6NodeText> getTextNodes() {
         return textNodes;
     }
@@ -979,8 +1018,8 @@ public class AntvX6 extends Div {
         return null;
     }
     
-    public X6EdgeBasic getEdgeById(String id){
-        for(X6EdgeBasic edge: edges){
+    public X6Edge getEdgeById(String id){
+        for(X6Edge edge: edges){
             if(edge.getId().equals(id))
                 return edge;
         }
@@ -1212,20 +1251,17 @@ public class AntvX6 extends Div {
         private final String id;
         private final String idSource;
         private final String idTarget;
-        private final String label;
         private final String verticesJson; 
 
         public EdgeChangedEvent(AntvX6 source, boolean fromClient,
                                 @EventData("event.detail.edge.id") String id,
                                 @EventData("event.detail.edge.idSource") String idSource,
                                 @EventData("event.detail.edge.idTarget") String idTarget,
-                                @EventData("event.detail.edge.label") String label,
                                 @EventData("event.detail.edge.vertices") String verticesJson) {
             super(source, fromClient);
             this.id = id;
             this.idSource = idSource;
             this.idTarget = idTarget;
-            this.label = label;
             this.verticesJson = verticesJson; 
         }
 
@@ -1241,31 +1277,40 @@ public class AntvX6 extends Div {
             return idTarget;
         }
 
-        public String getLabel() {
-            return label;
-        }
-
         public String getVerticesJson() {
             return verticesJson; 
         }
     }
 
-
     @DomEvent("edge-dblclick")
     public static class EdgeDblClickEvent extends ComponentEvent<AntvX6> {
         private final String edgeId;
+        private final String idSource;
+        private final String idTarget;
 
         public EdgeDblClickEvent(AntvX6 source, boolean fromClient,
-                                 @EventData("event.detail.edge.id") String edgeId) {
+                                 @EventData("event.detail.edge.id") String edgeId,
+                                 @EventData("event.detail.edge.idSource") String idSource,
+                                 @EventData("event.detail.edge.idTarget") String idTarget) {
             super(source, fromClient);
             this.edgeId = edgeId;
+            this.idSource = idSource;
+            this.idTarget = idTarget;
         }
 
         public String getEdgeId() {
             return edgeId;
         }
-    }
 
+        public String getIdSource() {
+            return idSource;
+        }
+
+        public String getIdTarget() {
+            return idTarget;
+        }
+
+    }
 
     /**
     * Event fired when a cell(node or edge) has been selected.

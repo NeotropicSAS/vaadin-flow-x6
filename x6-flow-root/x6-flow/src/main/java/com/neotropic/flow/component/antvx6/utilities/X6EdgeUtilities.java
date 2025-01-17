@@ -19,6 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.neotropic.flow.component.antvx6.objects.Vertex;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,15 +32,16 @@ public class X6EdgeUtilities {
     * Converts a JSON string representing a list of vertices into a list of Vertex objects.
     *
     * @param verticesJSONformat A JSON string containing the vertex data.
-    * @param vertices A list where the parsed Vertex objects will be added.
     */
-    public static void JSONtoVertices(String verticesJSONformat, List<Vertex> vertices) {
+    public static List<Vertex>  JSONtoVertices(String verticesJSONformat) {
         JsonArray jsonArray = JsonParser.parseString(verticesJSONformat).getAsJsonArray();
+        List<Vertex> vertices = new ArrayList<>();
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject vertexObject = jsonArray.get(i).getAsJsonObject();
             double x = vertexObject.get("x").getAsDouble();
             double y = vertexObject.get("y").getAsDouble();
             vertices.add(new Vertex(x, y));
         }
+        return vertices;
     }
 }
