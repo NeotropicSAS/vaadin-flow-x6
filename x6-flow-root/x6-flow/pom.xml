@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.neotropic.flow.component</groupId>
-    <artifactId>x6-flow</artifactId>
+    <artifactId>x6-for-vaadin-flow</artifactId>
     <version>1.0</version>
     <name>X6 Component for Vaadin Flow</name>
     <description>Antv6 integration for Vaadin</description>

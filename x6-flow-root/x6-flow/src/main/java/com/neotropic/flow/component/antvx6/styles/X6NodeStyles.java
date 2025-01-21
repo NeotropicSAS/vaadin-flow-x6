@@ -35,7 +35,7 @@ public class X6NodeStyles {
         this.strokeColor = "black";
         this.strokeWidth = 1.0;
         this.dash = "0";
-        this.zIndex = 0;
+        this.zIndex = 1;
     }
 
     public int getBorderRadius() {

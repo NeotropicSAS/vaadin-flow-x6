@@ -133,5 +133,5 @@ public abstract class X6AbstractNode extends X6Cell {
     public String getId() {
         return super.getId(); 
     }
-    
+  
 }

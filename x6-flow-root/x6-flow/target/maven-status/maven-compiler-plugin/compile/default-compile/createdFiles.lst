@@ -12,6 +12,7 @@ com/neotropic/flow/component/antvx6/AntvX6$CellUnselectedEvent.class
 com/neotropic/flow/component/antvx6/AntvX6$GraphCleanedEvent.class
 com/neotropic/flow/component/antvx6/AntvX6$EdgeDblClickEvent.class
 com/neotropic/flow/component/antvx6/styles/X6EdgeStyles.class
+com/neotropic/flow/component/antvx6/utilities/X6NodeUtilities.class
 com/neotropic/flow/component/antvx6/AntvX6$NodeChangedEvent.class
 com/neotropic/flow/component/antvx6/objects/Vertex.class
 com/neotropic/flow/component/antvx6/objects/Geometry.class

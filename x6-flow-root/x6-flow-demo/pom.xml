@@ -162,7 +162,7 @@
         </dependency>
         <dependency>
             <groupId>com.neotropic.flow.component</groupId>
-            <artifactId>x6-flow</artifactId>
+            <artifactId>x6-for-vaadin-flow</artifactId>
             <version>1.0</version>
             <type>jar</type>
         </dependency>

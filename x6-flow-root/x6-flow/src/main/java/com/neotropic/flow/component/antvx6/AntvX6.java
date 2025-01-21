@@ -646,7 +646,7 @@ public class AntvX6 extends Div {
         edgeStyles.addProperty("strokeColor", edge.getEdgeStyles().getStrokeColor());
         edgeStyles.addProperty("strokeWidth", edge.getEdgeStyles().getStrokeWidth());
         edgeStyles.addProperty("dash", edge.getEdgeStyles().getDash());
-        edgeStyles.addProperty("borderRadius", edge.getEdgeStyles().getBorderRadious());
+        edgeStyles.addProperty("borderRadious", edge.getEdgeStyles().getBorderRadious());
         edgeStyles.addProperty("zIndex", edge.getEdgeStyles().getzIndex());
         edgeData.add("edgeStyles", edgeStyles);
 

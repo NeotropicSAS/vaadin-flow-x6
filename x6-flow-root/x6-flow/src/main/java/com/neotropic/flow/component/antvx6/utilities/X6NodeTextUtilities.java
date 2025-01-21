@@ -19,9 +19,9 @@ import com.neotropic.flow.component.antvx6.constants.X6Constants;
 import com.neotropic.flow.component.antvx6.objects.Geometry;
 
 /**
- * Utilities to X6NodeText
- * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
- */
+* Utilities to X6NodeText
+* @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
+*/
 public class X6NodeTextUtilities {
     
     /**
