@@ -18,7 +18,6 @@ package com.neotropic.flow.component.antvx6.objects;
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
 import com.neotropic.flow.component.antvx6.styles.X6EdgeStyles;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -45,46 +44,6 @@ public class X6EdgeBasic extends X6Cell{
         this.idTarget = idTarget;
         this.vertices = new ArrayList<>();
         this.edgeStyles = new X6EdgeStyles();
-    }
-
-    @Override
-    public String getId() {
-        return super.getId(); 
-    }
-
-    @Override
-    public void setId(String id) {
-        super.setId(id); 
-    }
-
-    @Override
-    public void setStyles(HashMap<String, String> styles) {
-        super.setStyles(styles); 
-    }
-
-    @Override
-    public HashMap<String, String> getStyles() {
-        return super.getStyles(); 
-    }
-
-    @Override
-    public void setCellType(String cellType) {
-        super.setCellType(cellType); 
-    }
-
-    @Override
-    public String getCellType() {
-        return super.getCellType(); 
-    }
-
-    @Override
-    public void setTools(List<String> tools) {
-        super.setTools(tools); 
-    }
-
-    @Override
-    public List<String> getTools() {
-        return super.getTools(); 
     }
     
     public String getIdSource() {

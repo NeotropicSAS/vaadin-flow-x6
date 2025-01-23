@@ -108,30 +108,4 @@ public abstract class X6AbstractNode extends X6Cell {
     public String getShape() {
         return this.shape; 
     }
-
-    @Override
-    public String getCellType() {
-        return super.getCellType(); 
-    }
-    
-    @Override
-    public void setGeometry(Geometry geometry) {
-        super.setGeometry(geometry); 
-    }
-
-    @Override
-    public Geometry getGeometry() {
-        return super.getGeometry(); 
-    }
-
-    @Override
-    public void setId(String id) {
-        super.setId(id); 
-    }
-
-    @Override
-    public String getId() {
-        return super.getId(); 
-    }
-  
 }

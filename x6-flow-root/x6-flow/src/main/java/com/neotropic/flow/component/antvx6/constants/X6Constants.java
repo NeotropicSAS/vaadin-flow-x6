@@ -21,10 +21,13 @@ package com.neotropic.flow.component.antvx6.constants;
  */
 public class X6Constants {
     /**
-    * 
+    * Canvas with no control on human-node interactions
     */
     public static final int BASIC_GRAPH_TYPE = 0;
     
+    /**
+    * Canvas with human-node control on interactions 
+    */
     public static final int INTERACTIONS_GRAPH_TYPE = 1;
     
     /**

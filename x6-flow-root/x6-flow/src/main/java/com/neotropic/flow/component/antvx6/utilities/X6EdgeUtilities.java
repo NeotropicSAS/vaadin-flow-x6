@@ -79,8 +79,8 @@ public class X6EdgeUtilities {
         edge.setStyle(X6Constants.STYLE_DASHED, dash + "");
         
         //Border radius
-        int borderRadius = edge.getEdgeStyles().getBorderRadious();
-        edge.getEdgeStyles().setBorderRadious(borderRadius);
+        int borderRadius = edge.getEdgeStyles().getBorderRadius();
+        edge.getEdgeStyles().setBorderRadius(borderRadius);
         edge.setStyle(X6Constants.STYLE_ROUNDED, borderRadius + "");
         
         //Stroke width
@@ -130,11 +130,11 @@ public class X6EdgeUtilities {
 
         if (stylePropertyMap.containsKey(X6Constants.STYLE_ROUNDED) && !stylePropertyMap.get(X6Constants.STYLE_ROUNDED).isBlank()) {
             if ("0".equals(stylePropertyMap.get(X6Constants.STYLE_ROUNDED)))
-                edge.getEdgeStyles().setBorderRadious(0);
+                edge.getEdgeStyles().setBorderRadius(0);
             else
-                edge.getEdgeStyles().setBorderRadious(12); 
+                edge.getEdgeStyles().setBorderRadius(12); 
         }else
-            edge.getEdgeStyles().setBorderRadious(0);
+            edge.getEdgeStyles().setBorderRadius(0);
 
         if (stylePropertyMap.containsKey(X6Constants.STYLE_STROKEWIDTH) && !stylePropertyMap.get(X6Constants.STYLE_STROKEWIDTH).isBlank()){
             double strokeWidth = Double.parseDouble(stylePropertyMap.get(X6Constants.STYLE_STROKEWIDTH));

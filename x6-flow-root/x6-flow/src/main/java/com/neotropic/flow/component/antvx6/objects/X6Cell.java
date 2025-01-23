@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 /**
  * Represents a cell in the X6 graph.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}

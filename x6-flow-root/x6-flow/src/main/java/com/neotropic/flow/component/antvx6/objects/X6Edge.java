@@ -16,9 +16,6 @@
 package com.neotropic.flow.component.antvx6.objects;
 
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
-import com.neotropic.flow.component.antvx6.styles.X6EdgeStyles;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Represents a connection between two or more nodes in the X6 graph with one label.
@@ -44,91 +41,4 @@ public class X6Edge extends X6EdgeBasic{
     public void setLabel(String label) {
         this.label = label;
     }
-    
-
-    @Override
-    public String getId() {
-        return super.getId(); 
-    }
-
-    @Override
-    public void setId(String id) {
-        super.setId(id); 
-    }
-
-    @Override
-    public void setStyles(HashMap<String, String> styles) {
-        super.setStyles(styles); 
-    }
-
-    @Override
-    public HashMap<String, String> getStyles() {
-        return super.getStyles(); 
-    }
-
-    @Override
-    public void setCellType(String cellType) {
-        super.setCellType(cellType); 
-    }
-
-    @Override
-    public String getCellType() {
-        return super.getCellType(); 
-    }
-
-    @Override
-    public void setTools(List<String> tools) {
-        super.setTools(tools); 
-    }
-
-    @Override
-    public List<String> getTools() {
-        return super.getTools(); 
-    }
-
-    @Override
-    public void addVertex(Vertex vertex) {
-        super.addVertex(vertex); 
-    }
-
-    @Override
-    public void setVertices(List<Vertex> vertices) {
-        super.setVertices(vertices); 
-    }
-
-    @Override
-    public List<Vertex> getVertices() {
-        return super.getVertices(); 
-    }
-
-    @Override
-    public void setEdgeStyles(X6EdgeStyles edgeStyles) {
-        super.setEdgeStyles(edgeStyles); 
-    }
-
-    @Override
-    public X6EdgeStyles getEdgeStyles() {
-        return super.getEdgeStyles(); 
-    }
-
-    @Override
-    public void setIdTarget(String idTarget) {
-        super.setIdTarget(idTarget); 
-    }
-
-    @Override
-    public String getIdTarget() {
-        return super.getIdTarget(); 
-    }
-
-    @Override
-    public void setIdSource(String idSource) {
-        super.setIdSource(idSource); 
-    }
-
-    @Override
-    public String getIdSource() {
-        return super.getIdSource(); 
-    }
-    
 }

@@ -58,7 +58,7 @@ interface X6EdgeStyles {
   strokeColor: string;
   strokeWidth: number;
   dash: number;
-  borderRadious: number;
+  borderRadius: number;
   zIndex: number;
 }
 
@@ -1534,15 +1534,15 @@ export class X6 extends LitElement {
   */
   private getEdgeConnector(edge : X6Edge){
     let edgeConnector = {}
-    let valueRadious = 0;
+    let valueRadius = 0;
     let nameConnector = 'normal';
 
-    if(edge.edgeStyles.borderRadious && edge.edgeStyles.borderRadious > 0){
-      valueRadious = edge.edgeStyles.borderRadious;
+    if(edge.edgeStyles.borderRadius && edge.edgeStyles.borderRadius > 0){
+      valueRadius = edge.edgeStyles.borderRadius;
       nameConnector = 'rounded';
       edgeConnector = {
         name: nameConnector,
-        args: { radius: valueRadious}
+        args: { radius: valueRadius}
       }
     }else{
       edgeConnector = {

@@ -17,8 +17,8 @@ public class X6Factory {
         //Graph type (0 = basic canvas, 1 = interactions canvas)
         x6Canvas.setGraphType(graphType);
         //Dimensions
-        x6Canvas.setGrapthWidth(width);
-        x6Canvas.setGraptHeight(height);
+        x6Canvas.setGraphWidth(width);
+        x6Canvas.setGraphHeight(height);
         //Color
         x6Canvas.setBackgroundColor(bgColor);
         //Another configuration

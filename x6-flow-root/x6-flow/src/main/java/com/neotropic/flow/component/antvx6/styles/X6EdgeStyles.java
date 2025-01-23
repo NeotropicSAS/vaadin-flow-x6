@@ -26,7 +26,7 @@ public class X6EdgeStyles {
     private String strokeColor;
     private double strokeWidth;
     private double dash;
-    private int borderRadious;
+    private int borderRadius;
     private int zIndex;
     
     public X6EdgeStyles(){
@@ -36,7 +36,7 @@ public class X6EdgeStyles {
         this.strokeColor = "black";
         this.strokeWidth = 1;
         this.dash = 0;
-        this.borderRadious = 0;
+        this.borderRadius = 0;
         this.zIndex = 1;
     }
 
@@ -88,12 +88,12 @@ public class X6EdgeStyles {
         this.dash = dash;
     }
 
-    public int getBorderRadious() {
-        return borderRadious;
+    public int getBorderRadius() {
+        return borderRadius;
     }
 
-    public void setBorderRadious(int borderRadious) {
-        this.borderRadious = borderRadious;
+    public void setBorderRadius(int borderRadius) {
+        this.borderRadius = borderRadius;
     }
 
     public int getzIndex() {

@@ -128,7 +128,7 @@ public class ExampleStyles extends VerticalLayout{
             edge.getVertices().add(vertex1);
             
             //Apply styles
-            edge.getEdgeStyles().setBorderRadious(8);
+            edge.getEdgeStyles().setBorderRadius(8);
             edge.getEdgeStyles().setDash(4.4);
             edge.getEdgeStyles().setLabelFontFamily("Courier");
             edge.getEdgeStyles().setLabelFontSize(15);
