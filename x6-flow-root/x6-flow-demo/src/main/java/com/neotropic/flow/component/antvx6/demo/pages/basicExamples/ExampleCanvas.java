@@ -45,7 +45,7 @@ public class ExampleCanvas extends VerticalLayout{
         node.setId(UUID.randomUUID().toString());
         node.setGeometry(new Geometry(x, y, width, height));
         node.setShape(X6Constants.SHAPE_RECT);
-        node.setLabelText(label);
+        node.setLabel(label);
         node.getLabelStyles().setLabelPosition(labelPosition);
         node.setMovable(movable);
         

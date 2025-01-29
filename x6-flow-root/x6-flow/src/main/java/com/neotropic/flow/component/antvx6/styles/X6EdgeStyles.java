@@ -20,9 +20,6 @@ package com.neotropic.flow.component.antvx6.styles;
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
 public class X6EdgeStyles {
-    private String labelTextColor;
-    private double labelFontSize;
-    private String labelFontFamily;
     private String strokeColor;
     private double strokeWidth;
     private double dash;
@@ -30,38 +27,11 @@ public class X6EdgeStyles {
     private int zIndex;
     
     public X6EdgeStyles(){
-        this.labelTextColor = "black";
-        this.labelFontSize = 12;
-        this.labelFontFamily = "Arial";
         this.strokeColor = "black";
         this.strokeWidth = 1;
         this.dash = 0;
         this.borderRadius = 0;
         this.zIndex = 1;
-    }
-
-    public String getLabelTextColor() {
-        return labelTextColor;
-    }
-
-    public void setLabelTextColor(String labelTextColor) {
-        this.labelTextColor = labelTextColor;
-    }
-
-    public double getLabelFontSize() {
-        return labelFontSize;
-    }
-
-    public void setLabelFontSize(double labelFontSize) {
-        this.labelFontSize = labelFontSize;
-    }
-
-    public String getLabelFontFamily() {
-        return labelFontFamily;
-    }
-
-    public void setLabelFontFamily(String labelFontFamily) {
-        this.labelFontFamily = labelFontFamily;
     }
 
     public String getStrokeColor() {

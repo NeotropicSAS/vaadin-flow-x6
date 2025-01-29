@@ -45,7 +45,9 @@ public class X6Cell {
     
     public X6Cell(String id){
         this.id = id;
+        this.geometry = new Geometry();
         this.styles = new HashMap<>();
+        this.tools = new ArrayList<>();
     }
 
     public String getId() {

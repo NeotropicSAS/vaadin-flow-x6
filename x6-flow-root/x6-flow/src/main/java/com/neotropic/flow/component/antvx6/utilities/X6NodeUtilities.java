@@ -75,22 +75,22 @@ public class X6NodeUtilities {
         node.setStyle(X6Constants.STYLE_STROKEWIDTH, strokeWidth + "");
         
         //Font size
-        double fontSize = node.getLabelStyles().getLabelFontSize();
+        double fontSize = node.getLabelStyles().getFontSize();
         node.setStyle(X6Constants.STYLE_FONTSIZE, fontSize + "");
         
         //Font color
-        String fontColor = node.getLabelStyles().getLabelTextColor();
+        String fontColor = node.getLabelStyles().getFontColor();
         if (fontColor == null || fontColor.isBlank()) {
             fontColor = "black";
-            node.getLabelStyles().setLabelTextColor(fontColor);
+            node.getLabelStyles().setFontColor(fontColor);
         }
         node.setStyle(X6Constants.STYLE_FONTCOLOR, fontColor);
         
         //Font family
-        String fontFamily = node.getLabelStyles().getLabelFontFamily();
+        String fontFamily = node.getLabelStyles().getFontFamily();
         if (fontFamily == null || fontFamily.isBlank()) {
             fontFamily = "Arial";
-            node.getLabelStyles().setLabelFontFamily(fontFamily);
+            node.getLabelStyles().setFontFamily(fontFamily);
         }
         node.setStyle(X6Constants.STYLE_FONTFAMILY, fontFamily);
     }
@@ -132,13 +132,13 @@ public class X6NodeUtilities {
         
         if (stylePropertyMap.containsKey(X6Constants.STYLE_FONTSIZE) && !stylePropertyMap.get(X6Constants.STYLE_FONTSIZE).isBlank()) {
             double fontSize = Double.parseDouble(stylePropertyMap.get(X6Constants.STYLE_FONTSIZE));
-            node.getLabelStyles().setLabelFontSize(fontSize);
+            node.getLabelStyles().setFontSize(fontSize);
         }
 
         if (stylePropertyMap.containsKey(X6Constants.STYLE_FONTCOLOR) && !stylePropertyMap.get(X6Constants.STYLE_FONTCOLOR).isBlank())
-            node.getLabelStyles().setLabelTextColor(stylePropertyMap.get(X6Constants.STYLE_FONTCOLOR));
+            node.getLabelStyles().setFontColor(stylePropertyMap.get(X6Constants.STYLE_FONTCOLOR));
 
         if (stylePropertyMap.containsKey(X6Constants.STYLE_FONTFAMILY) && !stylePropertyMap.get(X6Constants.STYLE_FONTFAMILY).isBlank())
-            node.getLabelStyles().setLabelFontFamily(stylePropertyMap.get(X6Constants.STYLE_FONTFAMILY));
+            node.getLabelStyles().setFontFamily(stylePropertyMap.get(X6Constants.STYLE_FONTFAMILY));
     }
 }

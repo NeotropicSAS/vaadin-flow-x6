@@ -8,6 +8,7 @@ import com.neotropic.flow.component.antvx6.demo.factory.X6Factory;
 import com.neotropic.flow.component.antvx6.objects.Geometry;
 import com.neotropic.flow.component.antvx6.objects.Vertex;
 import com.neotropic.flow.component.antvx6.objects.X6Edge;
+import com.neotropic.flow.component.antvx6.objects.X6EdgeLabel;
 import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H4;
@@ -75,7 +76,7 @@ public class ExampleStyles extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("I'm a X6Node");
+            node.setLabel("I'm a X6Node");
             
             //Apply styles to Node
             node.getNodeStyles().setBorderRadius(8);
@@ -86,9 +87,9 @@ public class ExampleStyles extends VerticalLayout{
             node.getNodeStyles().setzIndex(2);
             
             //Apply styles to Node's label
-            node.getLabelStyles().setLabelFontFamily("Courier");
-            node.getLabelStyles().setLabelFontSize(15);
-            node.getLabelStyles().setLabelTextColor("red");
+            node.getLabelStyles().setFontFamily("Courier");
+            node.getLabelStyles().setFontSize(15);
+            node.getLabelStyles().setFontColor("red");
             node.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             
@@ -111,14 +112,14 @@ public class ExampleStyles extends VerticalLayout{
             source.setId(UUID.randomUUID().toString());
             source.setGeometry(new Geometry(50, 200, 50, 50));
             source.setShape(X6Constants.SHAPE_RECT);
-            source.setLabelText("Source");
+            source.setLabel("Source");
             
             //Create the node
             X6Node target = new X6Node();
             target.setId(UUID.randomUUID().toString());
             target.setGeometry(new Geometry(400, 200, 50, 50));
             target.setShape(X6Constants.SHAPE_RECT);
-            target.setLabelText("Target");
+            target.setLabel("Target");
 
             //Create the Edge
             X6Edge edge = new X6Edge(UUID.randomUUID().toString(), source.getId(), target.getId(), "label-connection");
@@ -130,13 +131,20 @@ public class ExampleStyles extends VerticalLayout{
             //Apply styles
             edge.getEdgeStyles().setBorderRadius(8);
             edge.getEdgeStyles().setDash(4.4);
-            edge.getEdgeStyles().setLabelFontFamily("Courier");
-            edge.getEdgeStyles().setLabelFontSize(15);
-            edge.getEdgeStyles().setLabelTextColor("red");
             edge.getEdgeStyles().setStrokeColor("red");
             edge.getEdgeStyles().setStrokeWidth(5);
             edge.getEdgeStyles().setzIndex(1);
             
+            X6EdgeLabel label = edge.getLabelAt(0);
+            
+            label.getStyles().setFillColor("gray");
+            label.getStyles().setFontColor("red");
+            label.getStyles().setFontSize(15);
+            label.getStyles().setFontFamily("Courier");
+            label.getStyles().setStrokeColor("red");
+            label.getStyles().setStrokeWidth(2);
+            label.getStyles().setBorderRadius(4);
+
             //Add the elements to the canvas
             basicCanvas.drawNode(source);
             basicCanvas.drawNode(target);
@@ -159,7 +167,7 @@ public class ExampleStyles extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(50, 200, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("I'm a X6Node");
+            node.setLabel("I'm a X6Node");
             node.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             //Add the elements to the canvas

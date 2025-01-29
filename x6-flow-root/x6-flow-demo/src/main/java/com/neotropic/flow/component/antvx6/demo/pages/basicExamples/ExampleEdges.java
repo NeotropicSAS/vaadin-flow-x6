@@ -8,12 +8,14 @@ import com.neotropic.flow.component.antvx6.demo.factory.X6Factory;
 import com.neotropic.flow.component.antvx6.objects.Geometry;
 import com.neotropic.flow.component.antvx6.objects.Vertex;
 import com.neotropic.flow.component.antvx6.objects.X6Edge;
-import com.neotropic.flow.component.antvx6.objects.X6EdgeBasic;
+import com.neotropic.flow.component.antvx6.objects.X6EdgeLabel;
 import com.neotropic.flow.component.antvx6.objects.X6Node;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,16 +25,16 @@ import java.util.UUID;
 public class ExampleEdges extends VerticalLayout{
     private X6Factory factory;
     private static String HEADER_TEXT = "X6 Edge";
-    private static String DRAW_EDGE_BASIC = "Draw Basic Edge";
+    private static String DRAW_EDGE_BASIC = "Draw Edge without labels";
     private static String DRAW_EDGE_WITH_LABEL = "Draw Edge with a unique label";
     private static String DRAW_EDGE_MULTIPLE_LABELS = "Draw Edge with multiple labels";
     private static String DRAW_EDGE_THROUGH_PORT = "Draw Edge through ports";
     private static String DRAW_EDGE_VERTICES = "Draw Edge with Vertices";
-    private static String DESCRIPTION = "The X6 add-on supports two types of edges (soon 3) with different responsibilities.";
+    private static String DESCRIPTION = "The X6 add-on supports edge handling, from edges without labels to edges with multiple labels.";
     private static String NOTE = "Whenever a change is made to the canvas (add nodes, edges, change styles, etc.), it must be done through an x6 or vaadin event, to update the current view.";
-    private static String DESCRIPTION_DRAW_EDGE_BASIC = "It's the base edge for the edges supported by the add-on. This edge represents a connection without any type of label.";
-    private static String DESCRIPTION_DRAW_EDGE_WITH_LABEL = "It's an edge which handles a single label on it.";
-    private static String DESCRIPTION_DRAW_EDGE_MULTIPLE_LABELS = "We are still working on this module, and an update will be released soon.";
+    private static String DESCRIPTION_DRAW_EDGE_BASIC = "Edge without labels";
+    private static String DESCRIPTION_DRAW_EDGE_WITH_LABEL = "Edge with a single label";
+    private static String DESCRIPTION_DRAW_EDGE_MULTIPLE_LABELS = "Edge with multiple labels";
     private static String DESCRIPTION_DRAW_EDGE_THROUGH_PORT = "We can create edges through nodes that manage ports (Only nodes of type X6Node have the characteristic of managing a connection port).";
     private static String DESCRIPTION_DRAW_EDGE_VERTICES = "We can create vertices which are points inside the edges. If you want to add vertices from the UI use the add vertices and segments tool.";
     
@@ -56,7 +58,7 @@ public class ExampleEdges extends VerticalLayout{
     
     private void createExamples(){
         VerticalLayout lytDrawBasicEdge = createAddBasicEdge();
-        VerticalLayout lytDrawEdge = createAddX6Edge();
+        VerticalLayout lytDrawEdge = createAddX6EdgeSingleLabel();
         VerticalLayout lytDrawEdgeMultipleLabels = createAddX6EdgeMultipleLabels();
         VerticalLayout lytPort = connectionThroughPort();
         VerticalLayout lytVertices = createVertices();
@@ -82,19 +84,19 @@ public class ExampleEdges extends VerticalLayout{
             target.setShape(X6Constants.SHAPE_RECT);
             
             //Create the basic edge
-            X6EdgeBasic edge = new X6EdgeBasic(UUID.randomUUID().toString(), source.getId(), target.getId());
+            X6Edge edge = new X6Edge(UUID.randomUUID().toString(), source.getId(), target.getId());
             
             //Add the elements
             basicCanvas.drawNode(source);
             basicCanvas.drawNode(target);
-            basicCanvas.drawEBasicEdge(edge);
+            basicCanvas.drawEdge(edge);
         });
         
         lytBasicCanvas.add(new H4(DRAW_EDGE_BASIC), new Paragraph(DESCRIPTION_DRAW_EDGE_BASIC) ,basicCanvas);
         return lytBasicCanvas;
     }
     
-    private VerticalLayout createAddX6Edge(){
+    private VerticalLayout createAddX6EdgeSingleLabel(){
         VerticalLayout lytBasicCanvas = new VerticalLayout();
         AntvX6 basicCanvas = this.factory.getBasicCanvas(600, 600, X6Constants.GRAPH_BACKGROUND_COLOR);
        
@@ -112,7 +114,7 @@ public class ExampleEdges extends VerticalLayout{
             target.setGeometry(new Geometry(300, 100, 50, 50));
             target.setShape(X6Constants.SHAPE_RECT);
             
-            //Create an edge with labels
+            //Create an edge with a single label in the middle of the edge
             X6Edge edge = new X6Edge(UUID.randomUUID().toString(), source.getId(), target.getId(), "label-connection");
             
             //Add the elements
@@ -127,8 +129,37 @@ public class ExampleEdges extends VerticalLayout{
     
     private VerticalLayout createAddX6EdgeMultipleLabels(){
         VerticalLayout lytBasicCanvas = new VerticalLayout();
+        AntvX6 basicCanvas = this.factory.getBasicCanvas(600, 600, X6Constants.GRAPH_BACKGROUND_COLOR);
+       
+        //Through an event, we create the elements
+        basicCanvas.addGraphCreatedListener(evt -> {
+            // Node source
+            X6Node source = new X6Node();
+            source.setId(UUID.randomUUID().toString());
+            source.setGeometry(new Geometry(100, 100, 50, 50));
+            source.setShape(X6Constants.SHAPE_RECT);
+            
+            // Node target
+            X6Node target = new X6Node();
+            target.setId(UUID.randomUUID().toString());
+            target.setGeometry(new Geometry(500, 100, 50, 50));
+            target.setShape(X6Constants.SHAPE_RECT);
+            
+            //Create an edge with multiple labels
+            List<X6EdgeLabel> labels = new ArrayList<>();
+            labels.add(new X6EdgeLabel("label-left", 0.2));
+            labels.add(new X6EdgeLabel("label-middle"));
+            labels.add(new X6EdgeLabel("label-right", 0.8));
+            
+            X6Edge edge = new X6Edge(UUID.randomUUID().toString(), source.getId(), target.getId(), labels);
+            
+            //Add the elements
+            basicCanvas.drawNode(source);
+            basicCanvas.drawNode(target);
+            basicCanvas.drawEdge(edge);
+        });
         
-        lytBasicCanvas.add(new H4(DRAW_EDGE_MULTIPLE_LABELS), new Paragraph(DESCRIPTION_DRAW_EDGE_MULTIPLE_LABELS));
+        lytBasicCanvas.add(new H4(DRAW_EDGE_MULTIPLE_LABELS), new Paragraph(DESCRIPTION_DRAW_EDGE_MULTIPLE_LABELS), basicCanvas);
         return lytBasicCanvas;
     }
     
@@ -183,14 +214,14 @@ public class ExampleEdges extends VerticalLayout{
             source.setId(UUID.randomUUID().toString());
             source.setGeometry(new Geometry(50, 200, 50, 50));
             source.setShape(X6Constants.SHAPE_RECT);
-            source.setLabelText("Source");
+            source.setLabel("Source");
             
             //Create the node
             X6Node target = new X6Node();
             target.setId(UUID.randomUUID().toString());
             target.setGeometry(new Geometry(400, 200, 50, 50));
             target.setShape(X6Constants.SHAPE_RECT);
-            target.setLabelText("Target");
+            target.setLabel("Target");
 
             //Create the Edge
             X6Edge edge = new X6Edge(UUID.randomUUID().toString(), source.getId(), target.getId(), "label-connection");

@@ -73,7 +73,7 @@ public class ExamplePlugins extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("drag me");
+            node.setLabel("drag me");
             node.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
 
             //Add the nodes to the canvas
@@ -99,14 +99,14 @@ public class ExamplePlugins extends VerticalLayout{
             node1.setId(UUID.randomUUID().toString());
             node1.setGeometry(new Geometry(100, 100, 50, 50));
             node1.setShape(X6Constants.SHAPE_RECT);
-            node1.setLabelText("Hello!");
+            node1.setLabel("Hello!");
             node1.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_DEFAULT);
             
             X6Node node2 = new X6Node();
             node2.setId(UUID.randomUUID().toString());
             node2.setGeometry(new Geometry(300, 100, 50, 50));
             node2.setShape(X6Constants.SHAPE_RECT);
-            node2.setLabelText("Hi!");
+            node2.setLabel("Hi!");
             node2.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_DEFAULT);
 
             //Add the nodes to the canvas
@@ -135,14 +135,14 @@ public class ExamplePlugins extends VerticalLayout{
             node1.setId(UUID.randomUUID().toString());
             node1.setGeometry(new Geometry(100, 100, 50, 50));
             node1.setShape(X6Constants.SHAPE_RECT);
-            node1.setLabelText("Move me");
+            node1.setLabel("Move me");
             node1.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             X6Node node2 = new X6Node();
             node2.setId(UUID.randomUUID().toString());
             node2.setGeometry(new Geometry(300, 100, 50, 50));
             node2.setShape(X6Constants.SHAPE_RECT);
-            node2.setLabelText("I'll wait....");
+            node2.setLabel("I'll wait....");
             node2.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
 
             //Add the nodes to the canvas
@@ -174,7 +174,7 @@ public class ExamplePlugins extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 100, 100));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("Resize me");
+            node.setLabel("Resize me");
             basicCanvas.drawNode(node);
 
             basicCanvas.addNodeChangedListener(listener -> {
@@ -210,14 +210,14 @@ public class ExamplePlugins extends VerticalLayout{
             node1.setId("node 1");
             node1.setGeometry(new Geometry(100, 100, 50, 50));
             node1.setShape(X6Constants.SHAPE_RECT);
-            node1.setLabelText("Select me");
+            node1.setLabel("Select me");
             node1.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             X6Node node2 = new X6Node();
             node2.setId("node 2");
             node2.setGeometry(new Geometry(300, 100, 50, 50));
             node2.setShape(X6Constants.SHAPE_RECT);
-            node2.setLabelText("Me too...");
+            node2.setLabel("Me too...");
             node2.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
 
             //Add the nodes to the canvas
@@ -269,7 +269,7 @@ public class ExamplePlugins extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("I'm a X6Node");
+            node.setLabel("I'm a X6Node");
             node.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
            
             //Add the nodes to the canvas

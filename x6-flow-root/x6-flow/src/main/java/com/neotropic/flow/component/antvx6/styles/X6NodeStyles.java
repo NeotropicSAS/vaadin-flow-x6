@@ -22,28 +22,20 @@ import com.neotropic.flow.component.antvx6.constants.X6Constants;
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}
  */
 public class X6NodeStyles {
-    private int borderRadius;
     private String fillColor;
     private String strokeColor;
     private double strokeWidth;
     private String dash;
+    private int borderRadius;
     private int zIndex;
     
     public X6NodeStyles(){
-        this.borderRadius = 0;
         this.fillColor = X6Constants.GRAPH_BACKGROUND_COLOR;
         this.strokeColor = "black";
         this.strokeWidth = 1.0;
         this.dash = "0";
+        this.borderRadius = 0;
         this.zIndex = 1;
-    }
-
-    public int getBorderRadius() {
-        return borderRadius;
-    }
-
-    public void setBorderRadius(int borderRadius) {
-        this.borderRadius = borderRadius;
     }
 
     public String getFillColor() {
@@ -77,7 +69,15 @@ public class X6NodeStyles {
     public void setDash(String dash) {
         this.dash = dash;
     }
-    
+
+    public int getBorderRadius() {
+        return borderRadius;
+    }
+
+    public void setBorderRadius(int borderRadius) {
+        this.borderRadius = borderRadius;
+    }
+
     public int getzIndex() {
         return zIndex;
     }
@@ -85,5 +85,5 @@ public class X6NodeStyles {
     public void setzIndex(int zIndex) {
         this.zIndex = zIndex;
     }
-
+    
 }

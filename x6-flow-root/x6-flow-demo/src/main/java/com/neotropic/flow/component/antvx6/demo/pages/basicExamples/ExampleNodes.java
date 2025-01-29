@@ -69,28 +69,28 @@ public class ExampleNodes extends VerticalLayout{
             rect.setId(UUID.randomUUID().toString());
             rect.setGeometry(new Geometry(100, 100, 50, 50));
             rect.setShape(X6Constants.SHAPE_RECT);
-            rect.setLabelText("I'm a Rectangle of X6");
+            rect.setLabel("I'm a Rectangle of X6");
             rect.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             X6Node ellipse = new X6Node();
             ellipse.setId(UUID.randomUUID().toString());
             ellipse.setGeometry(new Geometry(250, 100, 50, 80));
             ellipse.setShape(X6Constants.SHAPE_ELLIPSE);
-            ellipse.setLabelText("I'm a Ellipse of X6");
+            ellipse.setLabel("I'm a Ellipse of X6");
             ellipse.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             X6Node circle = new X6Node();
             circle.setId(UUID.randomUUID().toString());
             circle.setGeometry(new Geometry(400, 100, 50, 50));
             circle.setShape(X6Constants.SHAPE_CIRCLE);
-            circle.setLabelText("I'm a Circle of X6");
+            circle.setLabel("I'm a Circle of X6");
             circle.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             X6Node image = new X6Node();
             image.setId(UUID.randomUUID().toString());
             image.setGeometry(new Geometry(250, 250, 80, 80));
             image.setShape(X6Constants.SHAPE_IMAGE);
-            image.setLabelText("I'm a Image of X6");
+            image.setLabel("I'm a Image of X6");
             image.setImgUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZj-3Gf3IOMX44LXAIpUVhghfvXsCEId-EYmMtnvoKLnsMLUQxmuj4EH8aUfYiJoMn9o&usqp=CAU");
             image.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
@@ -122,7 +122,7 @@ public class ExampleNodes extends VerticalLayout{
             background.setId(UUID.randomUUID().toString());
             background.setGeometry(new Geometry(100, 100, 350, 350));
             background.setShape(X6Constants.SHAPE_IMAGE);
-            background.setLabelText("I'm a Background of X6");
+            background.setLabel("I'm a Background of X6");
             background.setImgUrl("https://www.livehome3d.com/assets/img/articles/how-to-draw-a-floor-plan/floor-plan-of-a-house-with-a-pool.jpg");
             background.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
@@ -130,7 +130,7 @@ public class ExampleNodes extends VerticalLayout{
             andElement.setId(UUID.randomUUID().toString());
             andElement.setGeometry(new Geometry(100, 100, 20, 20));
             andElement.setShape(X6Constants.SHAPE_RECT);
-            andElement.setLabelText("I'm not the background");
+            andElement.setLabel("I'm not the background");
             andElement.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             
             //add the nodes
@@ -153,7 +153,7 @@ public class ExampleNodes extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 100, 100));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("I'm the main node.");
+            node.setLabel("I'm the main node.");
             node.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_DEFAULT);
             node.setMovable(true);
             
@@ -162,20 +162,20 @@ public class ExampleNodes extends VerticalLayout{
             text.setId(UUID.randomUUID().toString());
             text.setGeometry(new Geometry(0, 0, 0, 0));
             text.setShape(X6Constants.SHAPE_RECT);
-            text.setLabelText("I'm the node text of the main node.");
+            text.setLabel("I'm the node text of the main node.");
             text.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_DEFAULT);
             //we set its parent (main node)
             text.setParentId(node.getId());
             text.setMovable(false);
             //position it below the node
             text.setLabelPositionRelative(X6Constants.BOTTOM);
-            text.getLabelStyles().setLabelTextColor("gray");
+            text.getLabelStyles().setFontColor("gray");
             text.getNodeStyles().setBorderRadius(8);
             text.getNodeStyles().setStrokeWidth(0);
             text.getNodeStyles().setFillColor("#DCD0FF");
             
             //Using utilities to create the dimensions and position of the NodeText
-            X6NodeTextUtilities.calculateLabelDimensions(text.getGeometry(), text.getLabelText(), text.getLabelStyles().getLabelFontSize());
+            X6NodeTextUtilities.calculateLabelDimensions(text.getGeometry(), text.getLabel(), text.getLabelStyles().getFontSize());
             X6NodeTextUtilities.calculateLabelPosition(node.getGeometry(), text.getGeometry(), text.getLabelPositionRelative(), 10);
             
             //Draw the node

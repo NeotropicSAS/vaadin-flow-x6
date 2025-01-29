@@ -15,11 +15,6 @@
  */
 package com.neotropic.flow.component.antvx6.objects;
 
-import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
-import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
-import java.util.HashMap;
-import java.util.List;
-
 /**
  * Represents a node in the X6 graph.
  * @author Julian David Camacho Erazo {@literal <julian.camacho@kuwaiba.org>}

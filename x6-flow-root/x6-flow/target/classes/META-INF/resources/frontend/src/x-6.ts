@@ -49,12 +49,22 @@ interface Geometry {
 }
 
 /**
+ * represents the label styles of a edge in the X6 model
+ */
+interface X6EdgeLabelStyles {
+  fillColor: string;
+  fontColor: string;
+  fontSize: number;
+  fontFamily: string;
+  strokeColor: string;
+  strokeWidth: number;
+  borderRadius: number;
+}
+
+/**
  * represents the styles of an edge in the X6 model
  */
 interface X6EdgeStyles {
-  labelTextColor: string;
-  labelFontSize: number;
-  labelFontFamily: string;
   strokeColor: string;
   strokeWidth: number;
   dash: number;
@@ -65,23 +75,23 @@ interface X6EdgeStyles {
 /**
  * represents the label styles of a node in the X6 model
  */
-interface X6LabelStyles {
-  labelTextColor: string;
-  labelFontSize: number;
-  labelFontFamily: string;
+interface X6NodeLabelStyles {
+  fontColor: string;
+  fontSize: number;
+  fontFamily: string;
   labelPosition: string;
-  labelVisibility: string;
+  visibility: string;
 }
 
 /**
  * represents the styles of a node in the X6 model
  */
 interface X6NodeStyles{
-  borderRadius: number;
   fillColor: string;
   strokeColor: string;
   strokeWidth: number;
   dash: string;
+  borderRadius: number;
   zIndex : number;
 }
 
@@ -102,9 +112,9 @@ interface X6AbstractNode extends X6Cell{
   imgUrl: string;
   movable: boolean;
   parentId: string;
-  labelText: string;
-  labelStyles : X6LabelStyles;
-  nodeStyles : X6NodeStyles;
+  label: string;
+  styles : X6NodeStyles;
+  labelStyles : X6NodeLabelStyles;
 }
 
 /**
@@ -138,30 +148,24 @@ interface Vertex {
 }
 
 /**
-* Represents an edge connecting two nodes in a graph.
+* Represents an edge in a graph.
 */
-interface X6EdgeBasic extends X6Cell {
+interface X6Edge extends X6Cell{
   idSource: string;
   idTarget: string;
-  label: string;
-  edgeStyles: X6EdgeStyles;
   vertices: string | Vertex[];
+  labels: string | X6EdgeLabel[];
+  styles: X6EdgeStyles;
 }
 
 /**
-* Represents an edge connecting two nodes in a graph with a Label.
+* Represents a label of an edge.
 */
-
-interface X6Edge extends X6EdgeBasic{
+interface X6EdgeLabel{
   label: string;
+  distance: number;
+  styles: X6EdgeLabelStyles;
 }
-
-/**
-*  Commented because it is not yet supported
-*/
-// interface X6EdgeMultipleLabels extends X6EdgeBasic {
-//   labels: string[];
-// }
 
 /**
  * AntV X6 element.
@@ -794,13 +798,14 @@ export class X6 extends LitElement {
     strokeWidth: "body/strokeWidth",
     dashed: "body/strokeDasharray",
     rounded: "body/r",
+    zIndex: "zIndex",
+    visibility: "label/visibility",
     fontSize: "label/fontSize",
     fontColor: "label/fill",
-    fontFamily: "label/fontFamily",
-    visibility: "label/visibility"
+    fontFamily: "label/fontFamily"
   }
 
-   /*
+  /*
   * A path that defines the location of a edge style attribute in the X6 model.
   */
   private stylesPathEdge: Record <string, string> = {
@@ -808,9 +813,20 @@ export class X6 extends LitElement {
     strokeWidth: "line/strokeWidth",
     dashed: "line/strokeDasharray",
     rounded: "connector/args/radius",
-    fontSize: "no path",
+    zIndex: "zIndex"
+  }
+
+   /*
+  * A path that defines the location of a edge label style attribute in the X6 model.
+  */
+   private stylesPathEdgeLabel: Record <string, string> = {
+    fillColor: "no path",
     fontColor: "no path",
+    fontSize: "no path",
     fontFamily: "no path",
+    strokeColor: "no path",
+    strokeWidth: "no path",
+    rounded: "no path"
   }
 
   /*
@@ -1232,18 +1248,18 @@ export class X6 extends LitElement {
         imageUrl:X6NodeBackground.imgUrl,
         attrs: {
           body: {
-            fill: X6NodeBackground.nodeStyles.fillColor,
-            stroke: X6NodeBackground.nodeStyles.strokeColor,
-            strokeWidth: X6NodeBackground.nodeStyles.strokeWidth,
-            strokeDasharray: X6NodeBackground.nodeStyles.dash,
-            rx: X6NodeBackground.nodeStyles.borderRadius,
-            ry: X6NodeBackground.nodeStyles.borderRadius
+            fill: X6NodeBackground.styles.fillColor,
+            stroke: X6NodeBackground.styles.strokeColor,
+            strokeWidth: X6NodeBackground.styles.strokeWidth,
+            strokeDasharray: X6NodeBackground.styles.dash,
+            rx: X6NodeBackground.styles.borderRadius,
+            ry: X6NodeBackground.styles.borderRadius
           },
           label: {
             ...labelPosition,
           },
         },
-        zIndex:X6NodeBackground.nodeStyles.zIndex
+        zIndex:X6NodeBackground.styles.zIndex
       });
     }
   }
@@ -1269,12 +1285,12 @@ export class X6 extends LitElement {
         imageUrl: node.imgUrl,
         attrs: {
           body: {
-            fill: node.nodeStyles.fillColor,
-            stroke: node.nodeStyles.strokeColor,
-            strokeWidth: node.nodeStyles.strokeWidth,
-            strokeDasharray: node.nodeStyles.dash,
-            rx: node.nodeStyles.borderRadius,
-            ry: node.nodeStyles.borderRadius
+            fill: node.styles.fillColor,
+            stroke: node.styles.strokeColor,
+            strokeWidth: node.styles.strokeWidth,
+            strokeDasharray: node.styles.dash,
+            rx: node.styles.borderRadius,
+            ry: node.styles.borderRadius
           },
           label: {
             ...labelPosition,
@@ -1283,7 +1299,7 @@ export class X6 extends LitElement {
         ports: {
           ...port
         },
-        zIndex: node.nodeStyles.zIndex,
+        zIndex: node.styles.zIndex,
       })
 
       this.setNodeTools(node);
@@ -1296,62 +1312,35 @@ export class X6 extends LitElement {
   * 
   * @param {string} nodeData - OBJ in json format.
   */
-    public drawText(nodeData : string){
-      if(this.graph){
-        const nodeText = JSON.parse(nodeData) as X6NodeText;
-        const labelDefaultPosition = this.getNodeLabelConfiguration(nodeText);
+  public drawText(nodeData : string){
+    if(this.graph){
+      const nodeText = JSON.parse(nodeData) as X6NodeText;
+      const labelDefaultPosition = this.getNodeLabelConfiguration(nodeText);
 
-        this.graph.addNode({
-          id: nodeText.id,
-          width: nodeText.geometry.dimensions.width,
-          height: nodeText.geometry.dimensions.height,
-          x: nodeText.geometry.coordinates.x,
-          y: nodeText.geometry.coordinates.y,
-          shape: nodeText.shape,
-          data: { enableMove: nodeText.movable },
-          attrs: {
-            body:{
-              fill: nodeText.nodeStyles.fillColor,
-              stroke: nodeText.nodeStyles.strokeColor,
-              strokeWidth: nodeText.nodeStyles.strokeWidth,
-              strokeDasharray: nodeText.nodeStyles.dash,
-              rx: nodeText.nodeStyles.borderRadius,
-              ry: nodeText.nodeStyles.borderRadius,
-            },
-            label: {
-              ...labelDefaultPosition,
-            }
-          }
-        });
-  
-        this.setParent(nodeText.parentId, nodeText.id);
-      }
-    }
-
-  public drawBasicEdge(edgeData: string) {
-    if (this.graph) {
-      const edge = JSON.parse(edgeData) as X6EdgeBasic;
-      const edgeConnector = this.getEdgeConnector(edge);
-
-      const newEdge = this.graph.addEdge({
-        id: edge.id,
-        source: edge.idSource,
-        target: edge.idTarget,
-        zIndex: edge.edgeStyles.zIndex,
-        connector: { ...edgeConnector },
+      this.graph.addNode({
+        id: nodeText.id,
+        width: nodeText.geometry.dimensions.width,
+        height: nodeText.geometry.dimensions.height,
+        x: nodeText.geometry.coordinates.x,
+        y: nodeText.geometry.coordinates.y,
+        shape: nodeText.shape,
+        data: { enableMove: nodeText.movable },
         attrs: {
-            line: {
-              sourceMarker: null,
-              targetMarker: null,
-              stroke: edge.edgeStyles.strokeColor,
-              strokeWidth: edge.edgeStyles.strokeWidth,
-              strokeDasharray: edge.edgeStyles.dash
-            }
+          body:{
+            fill: nodeText.styles.fillColor,
+            stroke: nodeText.styles.strokeColor,
+            strokeWidth: nodeText.styles.strokeWidth,
+            strokeDasharray: nodeText.styles.dash,
+            rx: nodeText.styles.borderRadius,
+            ry: nodeText.styles.borderRadius,
+          },
+          label: {
+            ...labelDefaultPosition,
+          }
         }
       });
 
-      if (Array.isArray(edge.vertices) && edge.vertices.length > 0) 
-          newEdge.setVertices(this.getVerticesFormat(edge.vertices));
+      this.setParent(nodeText.parentId, nodeText.id);
     }
   }
 
@@ -1366,27 +1355,29 @@ export class X6 extends LitElement {
   public drawEdge(edgeData: string) {
     if (this.graph) {
       const edge = JSON.parse(edgeData) as X6Edge;
-
-      const labelConfig = this.getEdgeLabelConfiguration(edge);
+      const labelsConfiguration = this.getEdgeLabelsConfiguration(edge);
+      //Connector sets the borderRadius of an edge
       const edgeConnector = this.getEdgeConnector(edge);
 
       const newEdge = this.graph.addEdge({
         id: edge.id,
         source: edge.idSource,
         target: edge.idTarget,
-        zIndex: edge.edgeStyles.zIndex,
+        zIndex: edge.styles.zIndex,
         connector: { ...edgeConnector },
         attrs: {
             line: {
               sourceMarker: null,
               targetMarker: null,
-              stroke: edge.edgeStyles.strokeColor,
-              strokeWidth: edge.edgeStyles.strokeWidth,
-              strokeDasharray: edge.edgeStyles.dash
+              stroke: edge.styles.strokeColor,
+              strokeWidth: edge.styles.strokeWidth,
+              strokeDasharray: edge.styles.dash
             }
-        },
-        label: { ...labelConfig },
+        }
       });
+
+      if(labelsConfiguration.length > 0)
+        this.setLabelsToEdge(newEdge, labelsConfiguration);
 
       if (Array.isArray(edge.vertices) && edge.vertices.length > 0) 
           newEdge.setVertices(this.getVerticesFormat(edge.vertices));
@@ -1413,29 +1404,28 @@ export class X6 extends LitElement {
     
     if (node.labelStyles.labelPosition === 'bottom') {
       labelPosition = {
-        text: node.labelText,
-        fontSize: node.labelStyles.labelFontSize,
-        fontFamily: node.labelStyles.labelFontFamily,
-        fill: node.labelStyles.labelTextColor,
+        text: node.label,
+        fontSize: node.labelStyles.fontSize,
+        fontFamily: node.labelStyles.fontFamily,
+        fill: node.labelStyles.fontColor,
         refX: 0.5,
         refY: '100%',
         refY2: 4,
         textAnchor: 'middle',
         textVerticalAnchor: 'top',
-        visibility: node.labelStyles.labelVisibility
-        
+        visibility: node.labelStyles.visibility
       };
     } else {
       labelPosition = {
-        text: node.labelText,
-        fontSize: node.labelStyles.labelFontSize,
-        fontFamily: node.labelStyles.labelFontFamily,
-        fill: node.labelStyles.labelTextColor,
+        text: node.label,
+        fontSize: node.labelStyles.fontSize,
+        fontFamily: node.labelStyles.fontFamily,
+        fill: node.labelStyles.fontColor,
         refX: 0.5,
         refY: 0.5,
         textAnchor: 'middle',
         textVerticalAnchor: 'middle',
-        visibility: node.labelStyles.labelVisibility
+        visibility: node.labelStyles.visibility
       };
     }
     
@@ -1482,48 +1472,56 @@ export class X6 extends LitElement {
     return nodePort;
   }
 
-  /**
-  * This method retrieves the label configuration for an edge in the X6 graph.
-  * 
-  * @param edge - The edge object whose label configuration is to be retrieved.
-  * @returns The label configuration object for the edge.
-  */
-  private getEdgeLabelConfiguration(edge: X6Edge){
-    let labelConfig = {};
+  private getEdgeLabelsConfiguration(edge: X6Edge){
+    const labelConfigs = [] as any[];
+    const x6Labels = edge.labels as X6EdgeLabel[];
     
-    if(edge.label && edge.label !== ''){
-      labelConfig = {
-        attrs: {
-          text: {
-            text: edge.label,
-            fontSize: edge.edgeStyles.labelFontSize,
-            fontFamily: edge.edgeStyles.labelFontFamily,
-            fill: edge.edgeStyles.labelTextColor,
-            textAnchor: 'middle',
-            textVerticalAnchor: 'middle',
-          },
-          rect: {
-            ref: 'text',
-            refX: -4,
-            refY: -2,
-            refWidth: '100%',
-            refHeight: '100%',
-            refWidth2: 8,
-            refHeight2: 5,
-            stroke: '#000000',
-            strokeWidth: '1',
-            rx: 5,
-            ry: 5,
-          }
-        },
-        position: {
-          distance: 0.5,
-          offset: 0,
-        },
-      };
-    }
+    if(x6Labels.length !== 0){
+      x6Labels.forEach((currentLabel) => {
+        if(currentLabel.label && currentLabel.label != "" && currentLabel.distance >= 0 && currentLabel.distance <= 1){
+          let currentLabelConfig = {};
+          currentLabelConfig = {
+            attrs: {
+              text: {
+                text: currentLabel.label,
+                fontSize: currentLabel.styles.fontSize,
+                fontFamily: currentLabel.styles.fontFamily,
+                fill: currentLabel.styles.fontColor,
+                textAnchor: 'middle',
+                textVerticalAnchor: 'middle',
+              },
+              rect: {
+                fill: currentLabel.styles.fillColor,
+                ref: 'text',
+                refX: -4,
+                refY: -2,
+                refWidth: '100%',
+                refHeight: '100%',
+                refWidth2: 8,
+                refHeight2: 5,
+                stroke: currentLabel.styles.strokeColor,
+                strokeWidth: currentLabel.styles.strokeWidth,
+                rx: currentLabel.styles.borderRadius,
+                ry: currentLabel.styles.borderRadius,
+              }
+            },
+            position: {
+              distance: currentLabel.distance,
+              offset: 0,
+            },
+          };
 
-    return labelConfig;
+          labelConfigs.push(currentLabelConfig);
+        }
+      });
+    }
+    return labelConfigs;
+  }
+
+  private setLabelsToEdge(edge: Edge , labels: any[]){
+    labels.forEach(currentLabel => {
+      edge.appendLabel(currentLabel);
+    });
   }
 
   /**
@@ -1537,8 +1535,8 @@ export class X6 extends LitElement {
     let valueRadius = 0;
     let nameConnector = 'normal';
 
-    if(edge.edgeStyles.borderRadius && edge.edgeStyles.borderRadius > 0){
-      valueRadius = edge.edgeStyles.borderRadius;
+    if(edge.styles.borderRadius && edge.styles.borderRadius > 0){
+      valueRadius = edge.styles.borderRadius;
       nameConnector = 'rounded';
       edgeConnector = {
         name: nameConnector,
@@ -1585,60 +1583,80 @@ export class X6 extends LitElement {
           if(style == "rounded"){
             node.setAttrByPath(pathStyle + "x", value);
             node.setAttrByPath(pathStyle + "y", value);
-          }else 
+          }else if(style == "zIndex")
+            node.setProp(pathStyle, value);
+          else 
             node.setAttrByPath(pathStyle, value);
         }
       }
     }
   }
 
-  public setEdgeStyle(id: string, style: string, value: string){
+  public setEdgeStyle(id: string, style: string, value: string) {
+    if (this.graph) {
+      const cell = this.graph.getCellById(id);
+      if (cell && cell.isEdge()) {
+        const edge = cell as Edge;
+        if (style in this.stylesPathEdge) {
+          const pathStyle = this.stylesPathEdge[style];
+          if (style == "rounded") {
+            edge.removeProp('connector');
+            if (value && Number(value) > 0) {
+              edge.setProp({
+                connector: {
+                  name: 'rounded',
+                  args: { radius: Number(value) }
+                }
+              });
+            } else {
+              edge.setProp({
+                connector: {
+                  name: 'normal'
+                }
+              });
+            }
+          }else if (style == "zIndex")
+            edge.setProp(pathStyle, value);
+          else
+            edge.setAttrByPath(pathStyle, value);
+        }
+      }
+    }
+  }
+  
+  public setEdgeLabelStyle(id: string, style: string, value: string, labelPos: number){
     if(this.graph){
       const cell = this.graph.getCellById(id);
       if(cell && cell.isEdge()){
         const edge = cell as Edge;
-        if(style in this.stylesPathEdge){
-          const pathStyle = this.stylesPathEdge[style];
-          if(style == "fontColor" || style == "fontSize" || style == "fontFamily"){
-            const label = edge.getLabelAt(0);
-            if(style == "fontColor"){
-              if(label && label.attrs && label.attrs.text){
-                label.attrs.text.fill = value;
-                edge.removeLabelAt(0);
-                edge.appendLabel(label);
-              }        
-            }else if(style == "fontSize"){
-              if(label && label.attrs && label.attrs.text){
-                label.attrs.text.fontSize = value;  
-                edge.removeLabelAt(0);
-                edge.appendLabel(label);
-              }
-            }else{
-              if(label && label.attrs && label.attrs.text){
-                label.attrs.text.fontFamily = value;
-                edge.removeLabelAt(0);
-                edge.appendLabel(label); 
-              }
-            }
+        if(style in this.stylesPathEdgeLabel){
+          //label of the edg
+          const label = edge.getLabelAt(labelPos);
+          if(style == "fillColor"){
+            if(label && label.attrs && label.attrs.rect)
+              label.attrs.rect.fill = value;
+          }else if(style == "fontColor"){
+            if(label && label.attrs && label.attrs.text)
+              label.attrs.text.fill = value;      
+          }else if(style == "fontSize"){
+            if(label && label.attrs && label.attrs.text)
+              label.attrs.text.fontSize = value;   
+          }else if(style == "fontFamily"){
+            if(label && label.attrs && label.attrs.text)
+              label.attrs.text.fontFamily = value;
+          }else if(style == "strokeColor"){
+            if(label && label.attrs && label.attrs.rect)
+              label.attrs.rect.stroke = value;
+          }else if(style == "strokeWidth"){
+            if(label && label.attrs && label.attrs.rect)
+              label.attrs.rect.strokeWidth  = value;
           }else if(style == "rounded"){
-            edge.removeProp('connector')
-            if(value && Number(value) > 0){
-              edge.setProp({
-                connector: {
-                  name: 'rounded',
-                  args: { radius: Number(value)}
-                }
-              })
-            }else{
-              edge.setProp({
-                connector:{
-                  name: 'normal'
-                }
-              })
+            if(label && label.attrs && label.attrs.rect){
+              label.attrs.rect.rx = value;
+              label.attrs.rect.ry = value;
             }
-          }else{
-            edge.setAttrByPath(pathStyle, value);
-          }            
+          }
+                
         }
       }
     }

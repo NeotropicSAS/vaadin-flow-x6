@@ -66,7 +66,7 @@ public class ExampleEvents extends VerticalLayout{
             node.setId("Node 1");
             node.setGeometry(new Geometry(100, 100, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("Move me");
+            node.setLabel("Move me");
             basicCanvas.drawNode(node);
 
             basicCanvas.addNodeMovedListener(listener -> {
@@ -98,7 +98,7 @@ public class ExampleEvents extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 50, 50));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("Hover over me");
+            node.setLabel("Hover over me");
             
             basicCanvas.drawNode(node);
         });

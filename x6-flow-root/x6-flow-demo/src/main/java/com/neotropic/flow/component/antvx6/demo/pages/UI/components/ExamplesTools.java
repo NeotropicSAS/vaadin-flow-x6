@@ -63,7 +63,7 @@ public class ExamplesTools extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 100, 100));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("Double click on me");
+            node.setLabel("Double click on me");
             node.getLabelStyles().setLabelPosition(X6Constants.LABEL_NODE_POSITION_BOTTOM);
             /*This tool should be added when drawing the element. 
             *In this version of X6, it does not require handling through a double-click event (which was necessary in versions prior to 2.x.x.x).
@@ -77,7 +77,7 @@ public class ExamplesTools extends VerticalLayout{
             //add the listener
             basicCanvas.addNodeChangedListener(listener -> {
                 String newText = listener.getNewLabel();
-                node.setLabelText(newText);
+                node.setLabel(newText);
             });
             
             //add the nodes
@@ -101,7 +101,7 @@ public class ExamplesTools extends VerticalLayout{
             node.setId(UUID.randomUUID().toString());
             node.setGeometry(new Geometry(100, 100, 100, 100));
             node.setShape(X6Constants.SHAPE_RECT);
-            node.setLabelText("Hover over me");
+            node.setLabel("Hover over me");
             
             basicCanvas.drawNode(node);
         });
@@ -123,13 +123,13 @@ public class ExamplesTools extends VerticalLayout{
             source.setId(UUID.randomUUID().toString());
             source.setGeometry(new Geometry(100, 100, 50, 50));
             source.setShape(X6Constants.SHAPE_RECT);
-            source.setLabelText("Source");
+            source.setLabel("Source");
             
             X6Node target = new X6Node();
             target.setId(UUID.randomUUID().toString());
             target.setGeometry(new Geometry(300, 100, 50, 50));
             target.setShape(X6Constants.SHAPE_RECT);
-            target.setLabelText("Target");
+            target.setLabel("Target");
             
             X6Edge edge = new X6Edge(UUID.randomUUID().toString(), source.getId(), target.getId(), "Press and hover over my line");
             

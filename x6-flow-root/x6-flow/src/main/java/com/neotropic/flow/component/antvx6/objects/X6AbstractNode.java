@@ -16,7 +16,7 @@
 package com.neotropic.flow.component.antvx6.objects;
 
 import com.neotropic.flow.component.antvx6.constants.X6Constants;
-import com.neotropic.flow.component.antvx6.styles.X6LabelStyles;
+import com.neotropic.flow.component.antvx6.styles.X6NodeLabelStyles;
 import com.neotropic.flow.component.antvx6.styles.X6NodeStyles;
 
 /**
@@ -29,16 +29,16 @@ public abstract class X6AbstractNode extends X6Cell {
     private String imgUrl;
     private boolean movable; 
     private String parentId;
-    private String labelText;
-    private X6LabelStyles labelStyles;
-    private X6NodeStyles nodeStyles;
+    private String label;
+    private X6NodeStyles styles;
+    private X6NodeLabelStyles labelStyles;
     
     public X6AbstractNode(){
         super();
         this.setCellType(X6Constants.CELL_NODE);
         this.movable = true;
-        this.labelStyles = new X6LabelStyles();
-        this.nodeStyles = new X6NodeStyles();
+        this.styles = new X6NodeStyles();
+        this.labelStyles = new X6NodeLabelStyles();
     }
     
     public X6AbstractNode(String id, double x, double y,double width, double height, String shape){
@@ -48,9 +48,17 @@ public abstract class X6AbstractNode extends X6Cell {
         this.imgUrl = "";
         this.movable = true;
         this.parentId = "";
-        this.labelText = "";
-        this.labelStyles = new X6LabelStyles();
-        this.nodeStyles = new X6NodeStyles();
+        this.label = "";
+        this.styles = new X6NodeStyles();
+        this.labelStyles = new X6NodeLabelStyles();
+    }
+
+    public String getShape() {
+        return shape;
+    }
+
+    public void setShape(String shape) {
+        this.shape = shape;
     }
 
     public String getImgUrl() {
@@ -59,14 +67,6 @@ public abstract class X6AbstractNode extends X6Cell {
 
     public void setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
-    }
-
-    public String getLabelText() {
-        return labelText;
-    }
-
-    public void setLabelText(String labelText) {
-        this.labelText = labelText;
     }
 
     public boolean isMovable() {
@@ -85,27 +85,29 @@ public abstract class X6AbstractNode extends X6Cell {
         this.parentId = parentId;
     }
 
-    public X6LabelStyles getLabelStyles() {
-        return labelStyles;
+    public String getLabel() {
+        return label;
     }
 
-    public void setLabelStyles(X6LabelStyles labelStyles) {
-        this.labelStyles = labelStyles;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public X6NodeStyles getNodeStyles() {
-        return nodeStyles;
+        return styles;
     }
 
-    public void setNodeStyles(X6NodeStyles nodeStyles) {
-        this.nodeStyles = nodeStyles;
+    public void setNodeStyles(X6NodeStyles styles) {
+        this.styles = styles;
+    }
+
+    public X6NodeLabelStyles getLabelStyles() {
+        return labelStyles;
+    }
+
+    public void setLabelStyles(X6NodeLabelStyles labelStyles) {
+        this.labelStyles = labelStyles;
     }
     
-    public void setShape(String shape) {
-        this.shape = shape;
-    }
-
-    public String getShape() {
-        return this.shape; 
-    }
+    
 }
